@@ -1,0 +1,37 @@
+{
+  "name": "@raid/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "@emotion/react": "^11",
+    "@emotion/styled": "^11",
+    "@mui/material": "^5",
+    "@raid/shared": "workspace:*",
+    "@raid/ui": "workspace:*",
+    "i18next": "^23",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "i18next-resources-to-backend": "^1.2.1",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-i18next": "^13",
+    "react-router-dom": "^6"
+  },
+  "devDependencies": {
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^7",
+    "@typescript-eslint/parser": "^7",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^8",
+    "typescript": "^5",
+    "vite": "^5"
+  }
+}

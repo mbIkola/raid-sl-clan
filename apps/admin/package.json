@@ -1,0 +1,29 @@
+{
+  "name": "@raid/admin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "react-admin": "^4",
+    "ra-data-simple-rest": "^4"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "vite": "^5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@typescript-eslint/parser": "^7",
+    "@typescript-eslint/eslint-plugin": "^7",
+    "eslint": "^8"
+  }
+}

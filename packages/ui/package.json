@@ -1,0 +1,17 @@
+{
+  "name": "@raid/ui",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "peerDependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "@mui/material": "^5"
+  },
+  "scripts": {
+    "build": "pnpm exec tsc -p tsconfig.json",
+    "typecheck": "pnpm exec tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts,.tsx"
+  }
+}

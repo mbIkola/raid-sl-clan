@@ -1,0 +1,28 @@
+{
+  "name": "@raid/bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "grammy": "^1",
+    "dotenv": "^16"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "ts-node-dev": "^2",
+    "@types/node": "^20",
+    "@typescript-eslint/parser": "^7",
+    "@typescript-eslint/eslint-plugin": "^7",
+    "eslint": "^8"
+  }
+}
+

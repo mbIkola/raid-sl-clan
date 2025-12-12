@@ -1,0 +1,19 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: |
+            - recursive: true
+            - args: [--frozen-lockfile, --strict-peer-dependencies]
+      - run: pnpm -r run build
+      - run: pnpm -r run typecheck
