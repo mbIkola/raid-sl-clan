@@ -1,4 +1,8 @@
 {
   "not found": "Not found",
-  "back to main": "Back to main"
+  "back to main": "Back to main",
+
+  "stats": "Stats",
+  "login": "Login",
+  "about": "About"
 }
