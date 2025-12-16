@@ -5,7 +5,7 @@ import {Box, Slide, Link as MuiLink, useTheme} from "@mui/material";
 
 
 export const LandingPage = () => {
-  const [links, setLinks] = useState([
+  const [links] = useState([
     {label: 'stats', target: '/dashboard'},
     {label: 'login', target: '/login'},
     {label: 'about', target: '/about'}

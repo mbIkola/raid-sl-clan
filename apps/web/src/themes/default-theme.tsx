@@ -26,9 +26,18 @@ export const defaultTheme = createTheme({
   },
   typography: {
     caption: {
-      // gothic
-      fontFamily: 'fantasy, Blackletter, Old English Text MT, Lucida Blackletter, Gothic, serif',
+      // gothic with Cyrillic support
+      fontFamily: "'Ruslan Display', fantasy, Blackletter, 'Old English Text MT', 'Lucida Blackletter', Gothic, serif",
+      fontSize: '1.6rem',
     }
+  },
+  customShadows: {
+    // text-shadow syntax: offset-x offset-y blur-radius color
+    text: {
+      subtle: '0px 1px 1px rgba(0,0,0,0.25)',
+      medium: '0px 2px 2px rgba(0,0,0,0.35)',
+      strong: '0px 3px 4px rgba(0,0,0,0.5)',
+    },
   },
   components: {
     MuiCssBaseline: {
@@ -47,14 +56,18 @@ export const defaultTheme = createTheme({
             backgroundPosition: "center",
             backgroundImage: `url(${theme.palette.backgrounds.notFound})`,
             "&__text": {
+              fontFamily: theme.typography.caption.fontFamily,
               fontWeight: theme.typography.fontWeightBold,
               color: theme.palette.primary.contrastText,
-              textShadow: theme.shadows[1],
+              fontSize: theme.typography.caption.fontSize,
+              textShadow: theme.customShadows.text.medium,
             },
             // Link also should be styled a bit differently to be visible on the background:
             "& a": {
               color: theme.palette.secondary.light,
-              textShadow: theme.shadows[2]
+              fontFamily: theme.typography.caption.fontFamily,
+              textShadow: theme.customShadows.text.strong,
+              fontSize: theme.typography.caption.fontSize,
             },
           },
 
@@ -84,16 +97,12 @@ export const defaultTheme = createTheme({
                 fontSize: theme.typography.h3.fontSize,
                 // color is gold with strong shadow
                 color: theme.palette.warning.contrastText,
-                textShadow: theme.shadows[0]
+                textShadow: theme.customShadows.text.strong
               }
             }
           },
-
-
         }
       }
     }
   }
 });
-
-
