@@ -62,8 +62,3 @@ Routes:
 - apps/backend: `PORT`
 - apps/bot: `TELEGRAM_BOT_TOKEN`
 - services/mcp: `MCP_PORT`
-
-## Notes
-- Admin under `/admin` may require Traefik middleware to strip prefix for static files depending on build path; adjust Traefik labels or build with `base`.
-- Consider adding DB (PostgreSQL) and ORM (Prisma/Drizzle) next.
-
