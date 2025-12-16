@@ -1,15 +1,17 @@
 import React from 'react';
+import { NotFoundRoot, NotFoundText } from './styles';
 import {useTranslation} from "react-i18next";
-import {Link} from "react-router-dom";
+import {StyledLink} from "../../components/styled-link";
 
-export const NotFoundPage = () => {
+export const NotFoundPage: React.FC = () => {
   const {t} = useTranslation();
-  return <div
-    className={`not-found`}
-  >
-    <h1 className={"not-found__text gothic"}>{t('not found')}</h1>
-
-    <h3><Link className={"gothic"} to={'/'}>{t('back to main')}</Link></h3>
-  </div>
-}
-
+  return (
+    <NotFoundRoot>
+      <NotFoundText>404</NotFoundText>
+      <NotFoundText>{t('not found')}</NotFoundText>
+      <StyledLink to={"/"} underline={"hover"}>
+        {t('back to main')}
+      </StyledLink>
+    </NotFoundRoot>
+  );
+};
