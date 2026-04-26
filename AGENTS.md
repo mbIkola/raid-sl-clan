@@ -48,7 +48,7 @@ Implemented:
 - Next.js App Router application
 - OpenNext + Wrangler configuration for Cloudflare deployment
 - Telegram webhook route handled in the same deployable
-- Commented D1 binding scaffold pending authenticated Cloudflare setup
+- Committed D1 binding in `apps/web/wrangler.jsonc` with real `database_id`, `preview_database_id`, and `migrations_dir: "../../platform/migrations"`
 
 ### `packages/core`
 
@@ -76,13 +76,13 @@ Contains the versioned SQL source of truth for D1 schema changes.
 2. Shared package boundaries for domain, application, ports, and platform code.
 3. A root Vitest configuration with repository-level tests.
 4. A repository-owned D1 migration directory.
-5. Operator documentation for Cloudflare bootstrap, delivery model, and deploy work.
+5. A committed `d1_databases` binding in `apps/web/wrangler.jsonc` pointing at the repository-owned D1 migrations directory.
+6. Operator documentation for Cloudflare bootstrap, delivery model, and deploy work.
 
 ## What Does Not Exist Yet
 
 - Additional deployable services
-- Production D1 bindings committed with real IDs
-- Authenticated Cloudflare bootstrap state in this repository
+- Verified authenticated Cloudflare operator access from this environment for remote D1 create, recreate, or migration work
 - Broader product/domain implementation
 - Authentication or authorization
 
@@ -93,12 +93,13 @@ Verified directly:
 - `pnpm install`
 - `pnpm typecheck`
 - `pnpm test`
+- `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local` lists `0001_bootstrap.sql`
 - `apps/web` has no nested `.git`
 
 Not yet verified:
 
-- Authenticated Cloudflare resource creation from this environment
-- Real `d1_databases` binding IDs in `apps/web/wrangler.jsonc`
+- Authenticated Cloudflare resource creation or recreation from this environment
+- Remote D1 migration execution from this environment
 - Any production deployment path
 
 ## Architecture Rules
