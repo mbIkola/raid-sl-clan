@@ -20,19 +20,19 @@ export const metadata: Metadata = {
   description: siteMetadataCopy.description,
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
-    apple: [{ url: "/apple-icon.png", type: "image/png" }]
+    icon: [{ url: "/meta/favicon.ico" }, { url: "/meta/icon.png", type: "image/png" }],
+    apple: [{ url: "/meta/apple-icon.png", type: "image/png" }]
   },
   openGraph: {
     title: siteMetadataCopy.title,
     description: siteMetadataCopy.description,
-    images: [{ url: "/opengraph-image.png", alt: "Raid SL Clan" }]
+    images: [{ url: "/meta/opengraph-image.png", alt: "Raid SL Clan" }]
   },
   twitter: {
     card: "summary_large_image",
     title: siteMetadataCopy.title,
     description: siteMetadataCopy.description,
-    images: ["/twitter-image.png"]
+    images: ["/meta/twitter-image.png"]
   }
 };
 

@@ -23,13 +23,20 @@ describe("RootLayout", () => {
     expect(metadata.description).toContain("public home");
     expect(metadata.metadataBase?.toString()).toBe("https://layout.test/");
     expect(metadata.manifest).toBe("/manifest.webmanifest");
+    expect(metadata.icons).toMatchObject({
+      icon: [
+        { url: "/meta/favicon.ico" },
+        { url: "/meta/icon.png", type: "image/png" }
+      ],
+      apple: [{ url: "/meta/apple-icon.png", type: "image/png" }]
+    });
     expect(metadata.openGraph).toMatchObject({
       title: "Raid SL Clan",
-      images: [{ url: "/opengraph-image.png", alt: "Raid SL Clan" }]
+      images: [{ url: "/meta/opengraph-image.png", alt: "Raid SL Clan" }]
     });
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
-      images: ["/twitter-image.png"]
+      images: ["/meta/twitter-image.png"]
     });
   });
 
