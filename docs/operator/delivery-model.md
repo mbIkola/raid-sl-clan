@@ -25,6 +25,12 @@ Cloudflare is the runtime target. It is not the build orchestrator for this repo
 - `CLOUDFLARE_ACCOUNT_ID`
   - Cloudflare account identifier used during deploy.
 
+## Required GitHub Variables
+
+- `PUBLIC_SITE_URL`
+  - Canonical production site URL, for example `https://vibr-clan.org`.
+  - GitHub Actions injects this value into the deploy job and the web package syncs it into `apps/web/wrangler.jsonc` before the OpenNext build/deploy path runs.
+
 No `npm` publish token is required because this repository does not publish packages.
 
 ## Production Workflow
@@ -40,7 +46,7 @@ Step order:
 5. run `pnpm test`;
 6. run `pnpm typecheck`;
 7. run `pnpm -r run build`;
-8. run `pnpm --filter @raid/web exec opennextjs-cloudflare build`;
+8. run `pnpm --filter @raid/web run cf:build`;
 9. run `pnpm deploy:web` only for `push` to `main`.
 
 ## Cloudflare Dashboard Policy

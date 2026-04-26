@@ -82,6 +82,7 @@ pnpm preview:web
 
 Standard production release happens from GitHub Actions on `push` to `main`.
 Delivery behavior is defined in `docs/operator/delivery-model.md`.
+Set the GitHub Actions variable `PUBLIC_SITE_URL` to the canonical production hostname so the deploy path rewrites `apps/web/wrangler.jsonc` before the Cloudflare build runs.
 
 Deploy the application manually only for bootstrap or emergency recovery:
 
@@ -111,7 +112,7 @@ Run these from the repository root:
 pnpm test
 pnpm typecheck
 pnpm -r run build
-pnpm --filter @raid/web exec opennextjs-cloudflare build
+pnpm --filter @raid/web run cf:build
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 

@@ -8,7 +8,7 @@ declare namespace Cloudflare {
 	interface Env {
 		DB: D1Database;
 		ASSETS: Fetcher;
-		PUBLIC_SITE_URL: "https://raid-sl-clan-web.kharchevyn.workers.dev";
+		PUBLIC_SITE_URL: "https://vibr-clan.org";
 	}
 }
 interface CloudflareEnv extends Cloudflare.Env {}

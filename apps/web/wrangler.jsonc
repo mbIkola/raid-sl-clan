@@ -9,7 +9,7 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "PUBLIC_SITE_URL": "https://raid-sl-clan-web.kharchevyn.workers.dev"
+    "PUBLIC_SITE_URL": "https://vibr-clan.org"
   },
   "d1_databases": [
     {
