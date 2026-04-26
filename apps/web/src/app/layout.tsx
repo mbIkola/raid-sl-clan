@@ -1,10 +1,39 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import localFont from "next/font/local";
+import React, { type ReactNode } from "react";
+import { siteMetadataCopy } from "../lib/site/content";
+import { resolvePublicSiteUrl } from "../lib/site/public-site-url";
 import "./globals.css";
 
+const displayFont = localFont({
+  src: "./fonts/RuslanDisplay-Regular.ttf",
+  variable: "--font-display",
+  display: "swap"
+});
+
 export const metadata: Metadata = {
-  title: "Raid SL Clan",
-  description: "Cloudflare-first MVP foundation for the Raid SL Clan website and bot."
+  metadataBase: new URL(resolvePublicSiteUrl()),
+  title: {
+    default: siteMetadataCopy.title,
+    template: "%s | Raid SL Clan"
+  },
+  description: siteMetadataCopy.description,
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/apple-icon.png", type: "image/png" }]
+  },
+  openGraph: {
+    title: siteMetadataCopy.title,
+    description: siteMetadataCopy.description,
+    images: [{ url: "/opengraph-image.png", alt: "Raid SL Clan" }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteMetadataCopy.title,
+    description: siteMetadataCopy.description,
+    images: ["/twitter-image.png"]
+  }
 };
 
 type RootLayoutProps = Readonly<{
@@ -14,7 +43,7 @@ type RootLayoutProps = Readonly<{
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${displayFont.variable} site-root`}>{children}</body>
     </html>
   );
 }
