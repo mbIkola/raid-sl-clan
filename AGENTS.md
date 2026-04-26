@@ -76,7 +76,7 @@ Contains the versioned SQL source of truth for D1 schema changes.
 2. Shared package boundaries for domain, application, ports, and platform code.
 3. A root Vitest configuration with repository-level tests.
 4. A repository-owned D1 migration directory.
-5. Operator documentation for Cloudflare bootstrap work.
+5. Operator documentation for Cloudflare bootstrap, delivery model, and deploy work.
 
 ## What Does Not Exist Yet
 
