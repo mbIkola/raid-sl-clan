@@ -93,6 +93,8 @@ Verified directly:
 - `pnpm install`
 - `pnpm typecheck`
 - `pnpm test`
+- `pnpm -r run build`
+- `pnpm --filter @raid/web exec opennextjs-cloudflare build`
 - `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local` lists `0001_bootstrap.sql`
 - `apps/web` has no nested `.git`
 
@@ -116,7 +118,7 @@ Not yet verified:
 
 ## Workflow Rules
 
-- Use `pnpm test` and `pnpm typecheck` as baseline validation for code changes.
+- Use `pnpm test`, `pnpm typecheck`, `pnpm -r run build`, `pnpm --filter @raid/web exec opennextjs-cloudflare build`, and `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local` as the baseline validation gate for code changes.
 - For Cloudflare work, prefer `pnpm --filter @raid/web exec wrangler ...` from the repo root.
 - If Cloudflare auth is missing, report the blocker plainly instead of pretending the environment is deploy-ready.
 - When changing architecture docs, preserve the beads workflow block at the end of this file.

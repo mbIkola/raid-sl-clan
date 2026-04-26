@@ -110,7 +110,10 @@ Run these from the repository root:
 ```bash
 pnpm test
 pnpm typecheck
+pnpm -r run build
+pnpm --filter @raid/web exec opennextjs-cloudflare build
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-The local Wrangler command uses the committed D1 binding in `apps/web/wrangler.jsonc` and is expected to succeed. Remote D1 commands still depend on authenticated Cloudflare access.
+This mirrors the GitHub Actions validation gate before the production deploy step on `main`.
+The local Wrangler command uses the committed D1 binding in `apps/web/wrangler.jsonc` and is expected to succeed. Remote D1 commands still depend on authenticated Cloudflare access, and production deployment itself is not claimed as locally verified here.
