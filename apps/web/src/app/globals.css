@@ -197,45 +197,6 @@ img {
   padding: 1.5rem;
 }
 
-/* Temporary compatibility for the current homepage until Task 3 rewrites it. */
-.site-shell {
-  width: min(100%, 72rem);
-  margin: 0 auto;
-  min-height: 100vh;
-  padding: 4rem 1.5rem;
-  display: grid;
-  align-content: center;
-  gap: 1.5rem;
-}
-
-.hero-panel,
-.info-panel {
-  border: 1px solid var(--site-border);
-  border-radius: 1.5rem;
-  background: var(--site-panel);
-  box-shadow: 0 1.5rem 3rem -2rem var(--site-shadow);
-  backdrop-filter: blur(16px);
-}
-
-.hero-panel {
-  padding: 2rem;
-}
-
-.info-panel {
-  padding: 1.5rem 2rem;
-  display: grid;
-  gap: 1rem;
-}
-
-.eyebrow {
-  margin: 0 0 0.75rem;
-  color: var(--site-accent);
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
 h1,
 h2,
 p {
@@ -252,46 +213,9 @@ h2 {
   font-size: 1.35rem;
 }
 
-.lede,
-.info-panel p {
+p {
   color: var(--site-muted);
   line-height: 1.65;
-}
-
-.lede {
-  max-width: 44rem;
-  margin-top: 1.25rem;
-  font-size: 1.05rem;
-}
-
-.status-grid {
-  margin-top: 2rem;
-  display: grid;
-  gap: 0.85rem;
-}
-
-.status-card {
-  padding: 1rem 1.1rem;
-  border: 1px solid rgba(206, 216, 230, 0.14);
-  border-radius: 1rem;
-  background: rgba(206, 216, 230, 0.06);
-  color: var(--site-text);
-}
-
-.webhook-hint {
-  display: inline-flex;
-  width: fit-content;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(206, 216, 230, 0.18);
-  border-radius: 999px;
-  background: rgba(4, 10, 15, 0.72);
-  color: var(--site-accent);
-  font-size: 0.95rem;
-}
-
-.footnote {
-  color: var(--site-soft);
-  font-size: 0.95rem;
 }
 
 @media (max-width: 900px) {
@@ -305,15 +229,5 @@ h2 {
 
   .landing-panel {
     margin-top: 0;
-  }
-
-  .site-shell {
-    padding: 2rem 1rem;
-  }
-
-  .hero-panel,
-  .info-panel {
-    padding: 1.35rem;
-    border-radius: 1.1rem;
   }
 }

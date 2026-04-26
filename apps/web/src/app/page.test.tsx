@@ -6,12 +6,20 @@ import HomePage from "./page";
 describe("HomePage", () => {
   it("renders the public landing panel with the agreed navigation", () => {
     const html = renderToStaticMarkup(<HomePage />);
+    const linkMatches = Array.from(
+      html.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g),
+      ([, href, label]) => ({ href, label })
+    );
 
     expect(html).toContain("Raid SL Clan");
-    expect(html).toContain("Dashboard");
-    expect(html).toContain("About");
     expect(html).toContain("Member login opens later");
-    expect(html).toContain('href="/dashboard"');
-    expect(html).toContain('href="/about"');
+    expect(linkMatches).toContainEqual({
+      href: "/dashboard",
+      label: "Dashboard"
+    });
+    expect(linkMatches).toContainEqual({
+      href: "/about",
+      label: "About"
+    });
   });
 });
