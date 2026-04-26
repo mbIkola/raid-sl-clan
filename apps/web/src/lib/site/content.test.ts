@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  aboutPageSections,
   dashboardSections,
   landingPanelLinks,
   siteArtwork,
@@ -25,6 +26,13 @@ describe("site content", () => {
       "Key Stats",
       "Recent Activity",
       "Announcements / Updates"
+    ]);
+  });
+
+  it("defines the expected public about page sections", () => {
+    expect(aboutPageSections.map((section) => section.heading)).toEqual([
+      "What This Place Is",
+      "What Comes Later"
     ]);
   });
 
