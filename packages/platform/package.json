@@ -1,0 +1,12 @@
+{
+  "name": "@raid/platform",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@raid/application": "workspace:*",
+    "@raid/core": "workspace:*",
+    "@raid/ports": "workspace:*"
+  }
+}

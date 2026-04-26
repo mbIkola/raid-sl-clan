@@ -1,0 +1,7 @@
+{
+  "name": "@raid/ports",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}

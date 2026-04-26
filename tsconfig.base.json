@@ -2,15 +2,20 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "Node",
-    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "strict": true,
     "skipLibCheck": true,
-    "jsx": "react-jsx",
-    "types": [],
+    "jsx": "preserve",
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@raid/core": ["packages/core/src/index.ts"],
+      "@raid/application": ["packages/application/src/index.ts"],
+      "@raid/ports": ["packages/ports/src/index.ts"],
+      "@raid/platform": ["packages/platform/src/index.ts"]
+    }
   }
 }

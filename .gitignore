@@ -1,15 +1,12 @@
-node_modules/
-.dist/
-dist/
+node_modules
+.next
+.open-next
+coverage
+dist
+.wrangler
+.dev.vars
+.dev.vars.*
 .env
 .env.*
-.pnpm-store/
-.DS_Store
-
-.idea
-
-# Beads / Dolt files (added by bd init)
-.dolt/
-*.db
-.beads-credential-key
-.worktrees/
+!.env.example
+!.dev.vars.example

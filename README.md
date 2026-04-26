@@ -1,64 +1,26 @@
-# Raid SL Clan Monorepo
+# Raid SL Clan
 
-Stack: pnpm workspaces, TypeScript, Fastify backend (REST/WebSocket), React SPA (MUI, i18n), React-Admin, Telegram bot (grammy), MCP server (fastmcp), Traefik reverse proxy.
+Cloudflare-first skeleton for the Raid SL Clan project.
 
-## Workspaces
-- apps/backend
-- apps/web
-- apps/admin
-- apps/bot
-- services/mcp
-- packages/shared
-- packages/ui
+## Layout
 
-## Quick start
+- `apps/web`: Next.js app router application
+- `packages/core`: shared domain primitives
+- `packages/application`: application services
+- `packages/ports`: boundary interfaces
+- `packages/platform`: platform adapters
 
-1. Install pnpm (Corepack):
+## Scripts
 
-```
-corepack enable
-corepack prepare pnpm@latest --activate
-```
-
-2. Install deps:
-
-```
+```bash
 pnpm install
+pnpm typecheck
+pnpm test
+pnpm dev:web
 ```
 
-3. Dev (per app):
+## Notes
 
-```
-pnpm --filter @raid/backend dev
-pnpm --filter @raid/web dev
-pnpm --filter @raid/admin dev
-pnpm --filter @raid/bot dev
-pnpm --filter @raid/mcp dev
-```
-
-4. Build all:
-
-```
-pnpm build
-```
-
-5. Docker compose (Traefik + services):
-
-```
-cd infra/compose
-docker compose up --build
-```
-
-Traefik dashboard: http://localhost:8080
-
-Routes:
-- Web: http://localhost/
-- Admin: http://localhost/admin
-- Backend API: http://localhost/api
-- Backend WS: ws://localhost/ws
-- MCP: http://localhost/mcp
-
-## Env variables
-- apps/backend: `PORT`
-- apps/bot: `TELEGRAM_BOT_TOKEN`
-- services/mcp: `MCP_PORT`
+- Workspace packages are defined in `pnpm-workspace.yaml`.
+- TypeScript path aliases are defined in `tsconfig.base.json`.
+- The repository currently contains a minimal web app and empty internal package skeletons only.

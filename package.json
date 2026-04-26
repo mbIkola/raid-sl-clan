@@ -1,29 +1,25 @@
 {
   "name": "raid-sl-clan",
   "private": true,
-  "version": "0.1.0",
-  "description": "Monorepo for backend, web, admin, bot, and MCP server",
+  "version": "0.2.0",
   "packageManager": "pnpm@9.0.0",
   "scripts": {
-    "build": "pnpm -r run build",
-    "dev": "pnpm -r --filter ./apps/* run dev",
-    "lint": "pnpm -r run lint",
+    "dev:web": "pnpm --filter @raid/web dev",
+    "preview:web": "pnpm --filter @raid/web preview",
+    "deploy:web": "pnpm --filter @raid/web deploy",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "pnpm -r run typecheck"
   },
   "workspaces": [
     "apps/*",
-    "services/*",
     "packages/*"
   ],
   "devDependencies": {
     "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@vitest/coverage-v8": "^2.1.8",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.8",
     "typescript": "^5.6.3"
-  },
-  "pnpm": {
-    "overrides": {
-      "react-is": "18.3.1"
-    }
   }
 }
