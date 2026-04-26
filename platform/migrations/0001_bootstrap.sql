@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS app_bootstrap (
+  id INTEGER PRIMARY KEY CHECK (id = 1),
+  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT OR IGNORE INTO app_bootstrap (id) VALUES (1);
