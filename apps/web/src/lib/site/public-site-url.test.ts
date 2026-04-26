@@ -1,21 +1,24 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const originalPublicSiteUrl = process.env.PUBLIC_SITE_URL;
+const env = process.env as Omit<NodeJS.ProcessEnv, "PUBLIC_SITE_URL"> & {
+  PUBLIC_SITE_URL?: string;
+};
+const originalPublicSiteUrl = env.PUBLIC_SITE_URL;
 
 afterEach(() => {
   vi.resetModules();
   vi.doUnmock("node:fs");
 
   if (originalPublicSiteUrl === undefined) {
-    delete process.env.PUBLIC_SITE_URL;
+    Reflect.deleteProperty(env, "PUBLIC_SITE_URL");
   } else {
-    process.env.PUBLIC_SITE_URL = originalPublicSiteUrl;
+    env.PUBLIC_SITE_URL = originalPublicSiteUrl;
   }
 });
 
 describe("resolvePublicSiteUrl", () => {
   it("prefers PUBLIC_SITE_URL from the environment", async () => {
-    process.env.PUBLIC_SITE_URL = "https://example.com/";
+    env.PUBLIC_SITE_URL = "https://example.com/";
 
     const { resolvePublicSiteUrl } = await import("./public-site-url");
 
@@ -23,7 +26,7 @@ describe("resolvePublicSiteUrl", () => {
   });
 
   it("falls back to the wrangler configuration when env is unset", async () => {
-    delete process.env.PUBLIC_SITE_URL;
+    Reflect.deleteProperty(env, "PUBLIC_SITE_URL");
 
     vi.doMock("node:fs", () => ({
       existsSync: vi.fn((value: string) => value.endsWith("apps/web/wrangler.jsonc")),
@@ -42,7 +45,7 @@ describe("resolvePublicSiteUrl", () => {
   });
 
   it("throws when env is unset and no config file can be found", async () => {
-    delete process.env.PUBLIC_SITE_URL;
+    Reflect.deleteProperty(env, "PUBLIC_SITE_URL");
 
     vi.doMock("node:fs", () => ({
       existsSync: vi.fn(() => false),
