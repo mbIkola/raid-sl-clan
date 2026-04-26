@@ -8,6 +8,10 @@ vi.mock("next/font/local", () => ({
   })
 }));
 
+vi.mock("../lib/site/public-site-url", () => ({
+  resolvePublicSiteUrl: () => "https://layout.test"
+}));
+
 import RootLayout, { metadata } from "./layout";
 
 describe("RootLayout", () => {
@@ -17,7 +21,7 @@ describe("RootLayout", () => {
       template: "%s | Raid SL Clan"
     });
     expect(metadata.description).toContain("public home");
-    expect(metadata.metadataBase?.toString()).toBe("https://vibr-clan.org/");
+    expect(metadata.metadataBase?.toString()).toBe("https://layout.test/");
     expect(metadata.manifest).toBe("/manifest.webmanifest");
     expect(metadata.openGraph).toMatchObject({
       title: "Raid SL Clan",
