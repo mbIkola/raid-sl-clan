@@ -20,9 +20,14 @@ export type NormalizedTelegramUpdate = {
 };
 
 export const normalizeTelegramUpdate = (
-  update: TelegramUpdate
+  update: unknown
 ): NormalizedTelegramUpdate | null => {
-  const chatId = update.message?.chat?.id;
+  if (!update || typeof update !== "object") {
+    return null;
+  }
+
+  const telegramUpdate = update as TelegramUpdate;
+  const chatId = telegramUpdate.message?.chat?.id;
 
   if (typeof chatId !== "string" && typeof chatId !== "number") {
     return null;
@@ -30,6 +35,6 @@ export const normalizeTelegramUpdate = (
 
   return {
     chatId: String(chatId),
-    text: update.message?.text
+    text: telegramUpdate.message?.text
   };
 };

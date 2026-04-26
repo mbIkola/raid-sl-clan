@@ -33,6 +33,10 @@ describe("normalizeTelegramUpdate", () => {
     ).toBeNull();
   });
 
+  it("returns null for a top-level null payload", () => {
+    expect(normalizeTelegramUpdate(null)).toBeNull();
+  });
+
   it("returns null when the chat id is not a string or number", () => {
     expect(
       normalizeTelegramUpdate({

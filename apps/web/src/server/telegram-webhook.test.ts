@@ -115,6 +115,32 @@ describe("handleTelegramWebhookRequest", () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
+  it("returns 400 when the JSON body is null", async () => {
+    const fetchFn = vi.fn();
+
+    const response = await handleTelegramWebhookRequest({
+      request: new Request("https://raid.example/api/telegram/webhook", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: "null"
+      }),
+      env: {
+        PUBLIC_SITE_URL: "https://raid.example",
+        TELEGRAM_BOT_TOKEN: "bot-token"
+      },
+      fetchFn
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "unsupported-update"
+    });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
   it("returns a controlled 5xx response when Telegram delivery fails", async () => {
     const fetchFn = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: false }), {
