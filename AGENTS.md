@@ -33,6 +33,8 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
   - Repository-owned SQL migrations for D1
 - `docs/operator`
   - Operator runbooks for Cloudflare bootstrap, delivery model, and deploy work
+- `docs/research`
+  - Repository-owned research documents and imported external research reports
 
 ### `apps/web`
 
@@ -122,6 +124,7 @@ Not yet verified:
 - For Cloudflare work, prefer `pnpm --filter @raid/web exec wrangler ...` from the repo root.
 - If Cloudflare auth is missing, report the blocker plainly instead of pretending the environment is deploy-ready.
 - When changing architecture docs, preserve the beads workflow block at the end of this file.
+- Keep all research documents under `docs/research`.
 - GitHub Actions is the source of truth for production delivery; do not reintroduce Cloudflare dashboard-managed repository builds.
 - Follow docs/operator/delivery-model.md when changing CI/CD, deploy triggers, or Cloudflare delivery flow.
 - Do not add package publishing flows unless the user explicitly changes repository policy.
