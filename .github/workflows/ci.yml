@@ -24,6 +24,7 @@ jobs:
       - run: pnpm test
       - run: pnpm typecheck
       - run: pnpm -r run build
+      - run: pnpm --filter @raid/web exec opennextjs-cloudflare build
 
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: pnpm deploy:web

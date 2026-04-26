@@ -40,7 +40,8 @@ Step order:
 5. run `pnpm test`;
 6. run `pnpm typecheck`;
 7. run `pnpm -r run build`;
-8. run `pnpm deploy:web` only for `push` to `main`.
+8. run `pnpm --filter @raid/web exec opennextjs-cloudflare build`;
+9. run `pnpm deploy:web` only for `push` to `main`.
 
 ## Cloudflare Dashboard Policy
 
