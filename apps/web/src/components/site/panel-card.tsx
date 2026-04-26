@@ -8,7 +8,7 @@ type PanelCardProps = {
 
 export function PanelCard({ title, children }: PanelCardProps) {
   return (
-    <section className="panel-card dashboard-stack">
+    <section className="panel-card panel-card--padded dashboard-stack">
       <h2 className="display-face">{title}</h2>
       <div>{children}</div>
     </section>

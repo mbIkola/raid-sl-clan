@@ -119,6 +119,10 @@ img {
   backdrop-filter: blur(14px);
 }
 
+.panel-card--padded {
+  padding: 1.5rem;
+}
+
 .landing-layout {
   display: grid;
   min-height: 100vh;
@@ -229,5 +233,14 @@ p {
 
   .landing-panel {
     margin-top: 0;
+  }
+
+  .panel-card--padded {
+    padding: 1.25rem;
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

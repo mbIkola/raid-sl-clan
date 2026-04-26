@@ -7,7 +7,7 @@ import { dashboardSections } from "../../lib/site/content";
 export default function DashboardPage() {
   return (
     <main className="dashboard-shell">
-      <header className="panel-card dashboard-header">
+      <header className="panel-card panel-card--padded dashboard-header">
         <div className="dashboard-stack">
           <BrandMark />
           <h1 className="display-face">Dashboard</h1>
