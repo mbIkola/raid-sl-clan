@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import React, { type ReactNode } from "react";
 import { siteMetadataCopy } from "../lib/site/content";
+import { resolvePublicSiteUrl } from "../lib/site/public-site-url";
 import "./globals.css";
 
 const displayFont = localFont({
@@ -11,6 +12,7 @@ const displayFont = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(resolvePublicSiteUrl()),
   title: {
     default: siteMetadataCopy.title,
     template: "%s | Raid SL Clan"
