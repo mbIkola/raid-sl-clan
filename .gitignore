@@ -12,3 +12,4 @@ dist/
 .dolt/
 *.db
 .beads-credential-key
+.worktrees/
