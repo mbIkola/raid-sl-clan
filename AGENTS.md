@@ -6,6 +6,7 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 ## Current Snapshot
 
 - Monorepo based on `pnpm` workspaces and TypeScript.
+- GitHub Actions is the source of truth for production build and deploy orchestration.
 - Cloudflare-first architecture with one active deployable in `apps/web`.
 - Runtime model: public website plus Telegram webhook served from the same Cloudflare deployment.
 - Internal package boundaries exist in `packages/core`, `packages/application`, `packages/ports`, and `packages/platform`.
@@ -19,7 +20,7 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 
 - `package.json`
   - Workspace scripts: `dev:web`, `preview:web`, `deploy:web`, `test`, `test:watch`, `typecheck`
-  - Package manager pinned to `pnpm@9.0.0`
+  - Package manager pinned to `pnpm@10.15.1`
 - `pnpm-workspace.yaml`
   - Workspaces: `apps/*`, `packages/*`
 - `README.md`
@@ -31,7 +32,7 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 - `platform/migrations`
   - Repository-owned SQL migrations for D1
 - `docs/operator`
-  - Operator runbooks for Cloudflare bootstrap and deploy work
+  - Operator runbooks for Cloudflare bootstrap, delivery model, and deploy work
 
 ### `apps/web`
 
@@ -118,6 +119,9 @@ Not yet verified:
 - For Cloudflare work, prefer `pnpm --filter @raid/web exec wrangler ...` from the repo root.
 - If Cloudflare auth is missing, report the blocker plainly instead of pretending the environment is deploy-ready.
 - When changing architecture docs, preserve the beads workflow block at the end of this file.
+- GitHub Actions is the source of truth for production delivery; do not reintroduce Cloudflare dashboard-managed repository builds.
+- Follow docs/operator/delivery-model.md when changing CI/CD, deploy triggers, or Cloudflare delivery flow.
+- Do not add package publishing flows unless the user explicitly changes repository policy.
 
 ## Practical Reading Order
 
@@ -129,13 +133,14 @@ If you are new to the repo, read in this order:
 4. `tsconfig.base.json`
 5. `apps/web/wrangler.jsonc`
 6. `docs/operator/cloudflare-bootstrap.md`
-7. `apps/web/src/app/layout.tsx`
-8. `apps/web/src/app/page.tsx`
-9. `apps/web/src/app/api/telegram/webhook/route.ts`
-10. `packages/core/src/index.ts`
-11. `packages/application/src/index.ts`
-12. `packages/ports/src/index.ts`
-13. `packages/platform/src/index.ts`
+7. `docs/operator/delivery-model.md`
+8. `apps/web/src/app/layout.tsx`
+9. `apps/web/src/app/page.tsx`
+10. `apps/web/src/app/api/telegram/webhook/route.ts`
+11. `packages/core/src/index.ts`
+12. `packages/application/src/index.ts`
+13. `packages/ports/src/index.ts`
+14. `packages/platform/src/index.ts`
 
 That is enough to understand the current skeleton.
 

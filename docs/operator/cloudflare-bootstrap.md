@@ -9,6 +9,12 @@ There is one deployable surface in the current foundation:
 
 Do not improvise infrastructure state in the Cloudflare dashboard and pretend the repo knows about it. The dashboard is a control plane, not a source of truth.
 
+## Delivery Model
+
+Primary CI/CD for this repository lives in GitHub Actions. Read `docs/operator/delivery-model.md` before changing build or deployment behavior.
+
+Cloudflare remains the runtime target, but Cloudflare dashboard repository builds are not the source of truth for production delivery.
+
 ## Prerequisites
 
 - Node.js 20 or newer
@@ -38,7 +44,7 @@ From the repository root:
 
 ```bash
 corepack enable
-corepack prepare pnpm@9.0.0 --activate
+corepack prepare pnpm@10.15.1 --activate
 pnpm install
 ```
 
@@ -163,11 +169,13 @@ Preview the worker bundle locally:
 pnpm preview:web
 ```
 
-Deploy the Cloudflare application:
+Deploy the Cloudflare application manually only when doing operator bootstrap or emergency recovery:
 
 ```bash
 pnpm deploy:web
 ```
+
+Normal production delivery should happen from GitHub Actions on `push` to `main` as described in `docs/operator/delivery-model.md`.
 
 If a release depends on new schema, apply the remote D1 migrations before or during the deploy runbook. Pretending application code and schema will reconcile themselves is how one earns an outage.
 
