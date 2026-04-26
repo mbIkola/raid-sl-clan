@@ -9,6 +9,12 @@ There is one deployable surface in the current foundation:
 
 Do not improvise infrastructure state in the Cloudflare dashboard and pretend the repo knows about it. The dashboard is a control plane, not a source of truth.
 
+## Delivery Model
+
+Primary CI/CD for this repository lives in GitHub Actions. Read `docs/operator/delivery-model.md` before changing build or deployment behavior.
+
+Cloudflare remains the runtime target, but Cloudflare dashboard repository builds are not the source of truth for production delivery.
+
 ## Prerequisites
 
 - Node.js 20 or newer
@@ -23,10 +29,10 @@ Do not improvise infrastructure state in the Cloudflare dashboard and pretend th
 3. Create a temporary Hello World Worker to verify the account can issue a `*.workers.dev` URL.
 4. Run `pnpm --filter @raid/web exec wrangler login`.
 5. Confirm auth with `pnpm --filter @raid/web exec wrangler whoami`.
-6. Create the D1 databases named `raid-sl-clan` and `raid-sl-clan-preview`.
-7. Copy the D1 binding JSON snippet from this document into `apps/web/wrangler.jsonc` and keep `migrations_dir` set to `../../platform/migrations`.
+6. Confirm the committed D1 binding in `apps/web/wrangler.jsonc` still matches the intended `raid-sl-clan` and `raid-sl-clan-preview` databases.
+7. Create or replace those D1 databases only if an authenticated operator is intentionally changing remote infrastructure, then update `apps/web/wrangler.jsonc` with the returned IDs and keep `migrations_dir` set to `../../platform/migrations`.
 8. Create `.dev.vars` from `apps/web/.dev.vars.example`.
-9. Apply migrations locally and remotely after the real D1 binding is present in `apps/web/wrangler.jsonc`.
+9. Apply migrations locally with the committed binding, and apply them remotely only when authenticated Cloudflare access is available for the target database.
 10. Deploy with `pnpm deploy:web`.
 11. Register the Telegram webhook with `curl`.
 
@@ -38,7 +44,7 @@ From the repository root:
 
 ```bash
 corepack enable
-corepack prepare pnpm@9.0.0 --activate
+corepack prepare pnpm@10.15.1 --activate
 pnpm install
 ```
 
@@ -65,7 +71,7 @@ export CLOUDFLARE_API_TOKEN=replace-me
 pnpm --filter @raid/web exec wrangler whoami
 ```
 
-If `wrangler whoami` reports that authentication is missing, stop there. You cannot create D1 databases or populate `apps/web/wrangler.jsonc` with real IDs without valid auth.
+If `wrangler whoami` reports that authentication is missing, stop there. You cannot create or replace remote D1 databases, update committed D1 IDs, or run remote migrations without valid auth.
 
 ## Workers Platform Sanity Check
 
@@ -112,23 +118,25 @@ The initial repository migration lives at:
 platform/migrations/0001_bootstrap.sql
 ```
 
-Local Wrangler D1 migration commands are blocked until `apps/web/wrangler.jsonc` contains a real, uncommented `d1_databases` binding with `migrations_dir: "../../platform/migrations"`. Until that authenticated bootstrap step is complete, Wrangler falls back to `apps/web/migrations` and `wrangler d1 migrations apply/list ... --local` fail.
+`apps/web/wrangler.jsonc` already commits a real `d1_databases` binding with `database_id`, `preview_database_id`, and `migrations_dir: "../../platform/migrations"`. Local Wrangler D1 migration commands use that committed binding and the repository-owned migrations directory.
 
-After the real binding is in place, create the local D1 database and apply migrations:
+Use the committed binding to create the local D1 database and apply migrations:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-Create the remote databases after authentication succeeds:
+The local migrations list command has already been verified to succeed and report `0001_bootstrap.sql`.
+
+Create or replace the remote databases only after authentication succeeds and only when operator work actually requires new database IDs:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 create raid-sl-clan
 pnpm --filter @raid/web exec wrangler d1 create raid-sl-clan-preview
 ```
 
-Record the returned `database_id` values and then copy this exact snippet into `apps/web/wrangler.jsonc`:
+If those commands return replacement IDs, update `apps/web/wrangler.jsonc` so the committed binding remains accurate:
 
 ```jsonc
 "d1_databases": [
@@ -142,14 +150,14 @@ Record the returned `database_id` values and then copy this exact snippet into `
 ]
 ```
 
-Apply migrations locally once the real binding points at `../../platform/migrations`:
+Apply migrations locally through the committed binding:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-Apply migrations to the remote database once the binding is real:
+Apply migrations to the remote database only when authenticated Cloudflare access is available:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --remote
@@ -163,11 +171,13 @@ Preview the worker bundle locally:
 pnpm preview:web
 ```
 
-Deploy the Cloudflare application:
+Deploy the Cloudflare application manually only when doing operator bootstrap or emergency recovery:
 
 ```bash
 pnpm deploy:web
 ```
+
+Normal production delivery should happen from GitHub Actions on `push` to `main` as described in `docs/operator/delivery-model.md`.
 
 If a release depends on new schema, apply the remote D1 migrations before or during the deploy runbook. Pretending application code and schema will reconcile themselves is how one earns an outage.
 
@@ -204,4 +214,4 @@ pnpm test
 pnpm typecheck
 ```
 
-If the D1 command fails before the real D1 binding is configured, that is expected in the current unauthenticated state. Once the real binding exists, initialize the local database through the migration apply command above and retry.
+The local D1 command should use the committed binding and succeed. If remote D1 commands fail without Cloudflare authentication, that is expected; remote creation, replacement, and migration work remain operator-gated.

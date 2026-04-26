@@ -2,7 +2,7 @@
   "name": "raid-sl-clan",
   "private": true,
   "version": "0.2.0",
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.15.1",
   "scripts": {
     "dev:web": "pnpm --filter @raid/web dev",
     "preview:web": "pnpm --filter @raid/web preview",

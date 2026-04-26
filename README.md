@@ -12,7 +12,7 @@ The active runtime target is Cloudflare, with one deployable application in `app
 - `packages/ports`: external contracts and repository interfaces
 - `packages/platform`: Cloudflare, Telegram, and D1-facing adapters
 - `platform/migrations`: repository-owned SQL migrations for D1
-- `docs/operator`: operator runbooks for Cloudflare bootstrap and deploy work
+- `docs/operator`: operator runbooks for Cloudflare bootstrap and GitHub Actions delivery-model work
 
 Current foundation scope:
 
@@ -36,7 +36,7 @@ Bootstrap the workspace:
 
 ```bash
 corepack enable
-corepack prepare pnpm@9.0.0 --activate
+corepack prepare pnpm@10.15.1 --activate
 pnpm install
 ```
 
@@ -59,16 +59,18 @@ pnpm deploy:web
 
 The initial D1 migration lives at `platform/migrations/0001_bootstrap.sql`.
 
-Local Wrangler D1 migration commands are blocked until `apps/web/wrangler.jsonc` contains a real, uncommented `d1_databases` binding with `migrations_dir: "../../platform/migrations"`. With the current commented scaffold, Wrangler falls back to `apps/web/migrations` and the local migration commands fail.
+`apps/web/wrangler.jsonc` already commits a real `d1_databases` binding with `database_id`, `preview_database_id`, and `migrations_dir: "../../platform/migrations"`. Local Wrangler D1 commands use that committed binding and the repository-owned migrations directory.
 
-Once the real binding exists, the local workflow is:
+The local workflow is:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-Remote D1 setup requires Cloudflare authentication and real database IDs. Until `wrangler d1 create` has been run by an authenticated operator, `apps/web/wrangler.jsonc` intentionally contains only a commented scaffold for the `d1_databases` binding.
+The local migrations list command has been verified to succeed and report `0001_bootstrap.sql`.
+
+Remote D1 creation, recreation, and remote migration work still require authenticated Cloudflare operator access. The repo contains committed binding IDs, but this repository does not pretend remote infrastructure can be changed without valid Cloudflare credentials.
 
 ## Preview And Deploy
 
@@ -78,25 +80,28 @@ Preview the Cloudflare worker bundle locally:
 pnpm preview:web
 ```
 
-Deploy the application:
+Standard production release happens from GitHub Actions on `push` to `main`.
+Delivery behavior is defined in `docs/operator/delivery-model.md`.
+
+Deploy the application manually only for bootstrap or emergency recovery:
 
 ```bash
 pnpm deploy:web
 ```
 
-Before a real deploy that depends on D1:
+Before a manual deploy that depends on D1:
 
 1. authenticate Wrangler;
-2. create the production and preview D1 databases;
-3. update `apps/web/wrangler.jsonc` with the real IDs;
-4. apply migrations remotely;
-5. deploy.
+2. confirm the target production and preview D1 databases match the committed binding, or update the binding if an authenticated operator has replaced them;
+3. apply migrations remotely if the release depends on schema changes;
+4. deploy.
 
 ## Operator Docs
 
-Cloudflare bootstrap and operator commands live in:
+Operator runbooks live in:
 
 - `docs/operator/cloudflare-bootstrap.md`
+- `docs/operator/delivery-model.md`
 
 ## Validation
 
@@ -105,7 +110,10 @@ Run these from the repository root:
 ```bash
 pnpm test
 pnpm typecheck
+pnpm -r run build
+pnpm --filter @raid/web exec opennextjs-cloudflare build
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-The Wrangler command is expected to fail until the real D1 binding is present in `apps/web/wrangler.jsonc`. Remote D1 commands and real binding IDs depend on Cloudflare authentication.
+This mirrors the GitHub Actions validation gate before the production deploy step on `main`.
+The local Wrangler command uses the committed D1 binding in `apps/web/wrangler.jsonc` and is expected to succeed. Remote D1 commands still depend on authenticated Cloudflare access, and production deployment itself is not claimed as locally verified here.

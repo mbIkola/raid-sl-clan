@@ -2,18 +2,36 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
         with:
-          run_install: |
-            - recursive: true
-            - args: [--frozen-lockfile, --strict-peer-dependencies]
+          version: 10.15.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm typecheck
       - run: pnpm -r run build
-      - run: pnpm -r run typecheck
+      - run: pnpm --filter @raid/web exec opennextjs-cloudflare build
+
+      - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: pnpm deploy:web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
