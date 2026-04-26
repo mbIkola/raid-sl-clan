@@ -1,1 +1,1 @@
-export { coreVersion } from "@raid/core";
+export * from "./telegram/handle-telegram-update";
