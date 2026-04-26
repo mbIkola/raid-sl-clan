@@ -12,6 +12,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PUBLIC_SITE_URL: ${{ vars.PUBLIC_SITE_URL }}
     steps:
       - uses: actions/checkout@v4
 
@@ -28,7 +30,7 @@ jobs:
       - run: pnpm test
       - run: pnpm typecheck
       - run: pnpm -r run build
-      - run: pnpm --filter @raid/web exec opennextjs-cloudflare build
+      - run: pnpm --filter @raid/web run cf:build
 
       - if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: pnpm deploy:web
