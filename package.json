@@ -6,7 +6,7 @@
   "scripts": {
     "dev:web": "pnpm --filter @raid/web dev",
     "preview:web": "pnpm --filter @raid/web preview",
-    "deploy:web": "pnpm --filter @raid/web deploy",
+    "deploy:web": "pnpm --filter @raid/web run deploy",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "pnpm -r run typecheck"
