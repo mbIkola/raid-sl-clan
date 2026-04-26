@@ -19,7 +19,7 @@ export default function AboutPage() {
             {aboutPageSections.map((section) => (
               <section
                 key={section.heading}
-                className="panel-card editorial-stack"
+                className="panel-card panel-card--editorial editorial-stack"
               >
                 <h2 className="display-face">{section.heading}</h2>
                 <p>{section.body}</p>

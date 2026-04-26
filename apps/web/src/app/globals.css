@@ -101,7 +101,7 @@ img {
   width: fit-content;
   padding: 0.85rem 1rem;
   border: 1px solid var(--site-border);
-  border-radius: 999px;
+  border-radius: 1rem;
   background: rgba(5, 7, 10, 0.48);
   color: var(--site-text);
   backdrop-filter: blur(10px);
@@ -121,6 +121,10 @@ img {
 
 .panel-card--padded {
   padding: 1.5rem;
+}
+
+.panel-card--editorial {
+  padding: 1rem;
 }
 
 .landing-layout {
@@ -145,6 +149,10 @@ img {
   align-self: stretch;
   display: grid;
   gap: 1.25rem;
+}
+
+.panel-card.landing-panel {
+  background: rgba(9, 12, 16, 0.8);
 }
 
 .landing-panel__stack,

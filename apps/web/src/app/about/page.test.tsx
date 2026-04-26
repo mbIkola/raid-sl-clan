@@ -1,6 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { aboutPageSections } from "../../lib/site/content";
 import AboutPage from "./page";
 
 describe("AboutPage", () => {
@@ -11,5 +12,8 @@ describe("AboutPage", () => {
     expect(html).toContain("Raid SL Clan");
     expect(html).toContain('href="/"');
     expect(html).toContain('href="/dashboard"');
+    expect(html.match(/class="panel-card panel-card--editorial editorial-stack"/g)).toHaveLength(
+      aboutPageSections.length
+    );
   });
 });
