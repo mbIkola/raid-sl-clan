@@ -6,11 +6,12 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 ## Current Snapshot
 
 - Monorepo based on `pnpm` workspaces and TypeScript.
-- Current application surface: a minimal Next.js app in `apps/web`.
-- Internal package skeletons exist in `packages/core`, `packages/application`, `packages/ports`, and `packages/platform`.
-- The repository has been reset away from the previous multi-service scaffold.
+- Cloudflare-first architecture with one active deployable in `apps/web`.
+- Runtime model: public website plus Telegram webhook served from the same Cloudflare deployment.
+- Internal package boundaries exist in `packages/core`, `packages/application`, `packages/ports`, and `packages/platform`.
+- Repository-owned D1 migrations live in `platform/migrations`.
 - `pnpm typecheck` passes across the current workspace skeleton.
-- There are no real product features, persistence, or tests yet.
+- Tests exist and should be run from the workspace root with `pnpm test`.
 
 ## Workspace Map
 
@@ -22,11 +23,15 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 - `pnpm-workspace.yaml`
   - Workspaces: `apps/*`, `packages/*`
 - `README.md`
-  - High-level skeleton overview
+  - Cloudflare-first architecture, workflow, and validation guide
 - `tsconfig.base.json`
   - Shared TypeScript settings and path aliases
 - `vitest.config.ts`
   - Test runner configuration for packages and `apps/web`
+- `platform/migrations`
+  - Repository-owned SQL migrations for D1
+- `docs/operator`
+  - Operator runbooks for Cloudflare bootstrap and deploy work
 
 ### `apps/web`
 
@@ -34,45 +39,51 @@ Source of truth:
 
 - `apps/web/src/app/layout.tsx`
 - `apps/web/src/app/page.tsx`
+- `apps/web/src/app/api/telegram/webhook/route.ts`
+- `apps/web/wrangler.jsonc`
 
 Implemented:
 
-- Minimal Next.js App Router scaffold
-- TypeScript and ESLint configuration from `create-next-app`
-- Basic root layout and home page
+- Next.js App Router application
+- OpenNext + Wrangler configuration for Cloudflare deployment
+- Telegram webhook route handled in the same deployable
+- Commented D1 binding scaffold pending authenticated Cloudflare setup
 
 ### `packages/core`
 
-Contains the first shared domain entry point for future core types and constants.
+Contains pure domain primitives and rules. This package must remain free of Cloudflare, SQL, and transport-specific code.
 
 ### `packages/application`
 
-Contains the application-layer package skeleton and depends on `@raid/core` and `@raid/ports`.
+Contains application orchestration and use cases. It may depend on `@raid/core` and `@raid/ports`, but not on Cloudflare SDKs or direct D1 access.
 
 ### `packages/ports`
 
-Contains the boundary/interface package skeleton for future adapters and repositories.
+Contains boundary interfaces for repositories and provider contracts.
 
 ### `packages/platform`
 
-Contains the platform-adapter package skeleton and depends on `@raid/application` and `@raid/ports`.
+Contains Cloudflare, Telegram, and future D1-backed adapter implementations.
+
+### `platform/migrations`
+
+Contains the versioned SQL source of truth for D1 schema changes.
 
 ## What Exists
 
-1. A minimal monorepo skeleton with one Next.js app and four internal packages.
-2. Shared TypeScript path aliases for the internal packages.
-3. A root Vitest configuration ready for package and web tests.
-4. A lockfile and workspace layout aligned with the current skeleton.
+1. A Cloudflare-first monorepo with one active deployable surface in `apps/web`.
+2. Shared package boundaries for domain, application, ports, and platform code.
+3. A root Vitest configuration with repository-level tests.
+4. A repository-owned D1 migration directory.
+5. Operator documentation for Cloudflare bootstrap work.
 
 ## What Does Not Exist Yet
 
-- Backend API
-- Admin app
-- Additional removed service surfaces
-- Compose/Traefik deployment scaffold
-- Persistence or domain logic
+- Additional deployable services
+- Production D1 bindings committed with real IDs
+- Authenticated Cloudflare bootstrap state in this repository
+- Broader product/domain implementation
 - Authentication or authorization
-- Automated tests
 
 ## Verification Performed
 
@@ -80,13 +91,33 @@ Verified directly:
 
 - `pnpm install`
 - `pnpm typecheck`
+- `pnpm test`
 - `apps/web` has no nested `.git`
 
 Not yet verified:
 
-- Web app behavior in a browser
-- `pnpm test` with real tests
+- Authenticated Cloudflare resource creation from this environment
+- Real `d1_databases` binding IDs in `apps/web/wrangler.jsonc`
 - Any production deployment path
+
+## Architecture Rules
+
+- Treat Cloudflare as the platform target unless the user explicitly changes direction.
+- Keep Cloudflare-specific code in `apps/web` and `packages/platform`.
+- Keep domain rules in `packages/core`.
+- Keep orchestration in `packages/application`.
+- Keep infrastructure contracts in `packages/ports`.
+- Access D1 only through repository implementations, never directly from route handlers or application services.
+- Store schema changes under `platform/migrations`.
+- Do not fabricate Cloudflare IDs, tokens, or deployment readiness.
+- Prefer repo-owned commands and runbooks over dashboard-only manual steps.
+
+## Workflow Rules
+
+- Use `pnpm test` and `pnpm typecheck` as baseline validation for code changes.
+- For Cloudflare work, prefer `pnpm --filter @raid/web exec wrangler ...` from the repo root.
+- If Cloudflare auth is missing, report the blocker plainly instead of pretending the environment is deploy-ready.
+- When changing architecture docs, preserve the beads workflow block at the end of this file.
 
 ## Practical Reading Order
 
@@ -96,12 +127,15 @@ If you are new to the repo, read in this order:
 2. `package.json`
 3. `pnpm-workspace.yaml`
 4. `tsconfig.base.json`
-5. `apps/web/src/app/layout.tsx`
-6. `apps/web/src/app/page.tsx`
-7. `packages/core/src/index.ts`
-8. `packages/application/src/index.ts`
-9. `packages/ports/src/index.ts`
-10. `packages/platform/src/index.ts`
+5. `apps/web/wrangler.jsonc`
+6. `docs/operator/cloudflare-bootstrap.md`
+7. `apps/web/src/app/layout.tsx`
+8. `apps/web/src/app/page.tsx`
+9. `apps/web/src/app/api/telegram/webhook/route.ts`
+10. `packages/core/src/index.ts`
+11. `packages/application/src/index.ts`
+12. `packages/ports/src/index.ts`
+13. `packages/platform/src/index.ts`
 
 That is enough to understand the current skeleton.
 

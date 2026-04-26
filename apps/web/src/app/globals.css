@@ -1,1 +1,152 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --page-background: #0c1117;
+  --panel-background: rgba(9, 15, 22, 0.88);
+  --panel-border: rgba(120, 160, 189, 0.2);
+  --panel-shadow: rgba(2, 6, 12, 0.45);
+  --text-primary: #ecf3f8;
+  --text-secondary: #b8c7d2;
+  --text-muted: #8da2b3;
+  --accent: #8fd3ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(78, 126, 165, 0.22), transparent 32%),
+    linear-gradient(180deg, #111926 0%, var(--page-background) 58%, #070b10 100%);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans, "Segoe UI", sans-serif);
+}
+
+a {
+  color: inherit;
+}
+
+code {
+  font-family:
+    "SFMono-Regular",
+    "SF Mono",
+    Consolas,
+    "Liberation Mono",
+    monospace;
+}
+
+.site-shell {
+  width: min(100%, 72rem);
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 4rem 1.5rem;
+  display: grid;
+  align-content: center;
+  gap: 1.5rem;
+}
+
+.hero-panel,
+.info-panel {
+  border: 1px solid var(--panel-border);
+  border-radius: 1.5rem;
+  background: var(--panel-background);
+  box-shadow: 0 1.5rem 3rem -2rem var(--panel-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.hero-panel {
+  padding: 2rem;
+}
+
+.info-panel {
+  padding: 1.5rem 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 6vw, 4.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+h2 {
+  font-size: 1.35rem;
+}
+
+.lede,
+.info-panel p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.lede {
+  max-width: 44rem;
+  margin-top: 1.25rem;
+  font-size: 1.05rem;
+}
+
+.status-grid {
+  margin-top: 2rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.status-card {
+  padding: 1rem 1.1rem;
+  border: 1px solid rgba(143, 211, 255, 0.12);
+  border-radius: 1rem;
+  background: rgba(143, 211, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.webhook-hint {
+  display: inline-flex;
+  width: fit-content;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(143, 211, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(4, 10, 15, 0.72);
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+.footnote {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 640px) {
+  .site-shell {
+    padding: 2rem 1rem;
+  }
+
+  .hero-panel,
+  .info-panel {
+    padding: 1.35rem;
+    border-radius: 1.1rem;
+  }
+}

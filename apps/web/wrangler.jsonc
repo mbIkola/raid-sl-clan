@@ -8,6 +8,19 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
+  // Add the real binding after authenticated `wrangler d1 create` commands succeed.
+  // Until this block is real and uncommented, local Wrangler D1 migration commands
+  // fall back to `apps/web/migrations` and do not work for `../../platform/migrations`.
+  // Do not replace these placeholders with guessed IDs.
+  // "d1_databases": [
+  //   {
+  //     "binding": "DB",
+  //     "database_name": "raid-sl-clan",
+  //     "database_id": "<production database id>",
+  //     "preview_database_id": "<preview database id>",
+  //     "migrations_dir": "../../platform/migrations"
+  //   }
+  // ],
   "observability": {
     "enabled": true
   }
