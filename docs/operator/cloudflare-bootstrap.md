@@ -26,7 +26,7 @@ Do not improvise infrastructure state in the Cloudflare dashboard and pretend th
 6. Create the D1 databases named `raid-sl-clan` and `raid-sl-clan-preview`.
 7. Copy the D1 binding JSON snippet from this document into `apps/web/wrangler.jsonc` and keep `migrations_dir` set to `../../platform/migrations`.
 8. Create `.dev.vars` from `apps/web/.dev.vars.example`.
-9. Apply migrations locally and remotely.
+9. Apply migrations locally and remotely after the real D1 binding is present in `apps/web/wrangler.jsonc`.
 10. Deploy with `pnpm deploy:web`.
 11. Register the Telegram webhook with `curl`.
 
@@ -112,7 +112,9 @@ The initial repository migration lives at:
 platform/migrations/0001_bootstrap.sql
 ```
 
-Create the local D1 database and apply migrations:
+Local Wrangler D1 migration commands are blocked until `apps/web/wrangler.jsonc` contains a real, uncommented `d1_databases` binding with `migrations_dir: "../../platform/migrations"`. Until that authenticated bootstrap step is complete, Wrangler falls back to `apps/web/migrations` and `wrangler d1 migrations apply/list ... --local` fail.
+
+After the real binding is in place, create the local D1 database and apply migrations:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
@@ -140,7 +142,7 @@ Record the returned `database_id` values and then copy this exact snippet into `
 ]
 ```
 
-Apply migrations locally once the binding points at `../../platform/migrations`:
+Apply migrations locally once the real binding points at `../../platform/migrations`:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
@@ -202,4 +204,4 @@ pnpm test
 pnpm typecheck
 ```
 
-If the D1 command fails because the database was not created locally yet, initialize the local database through the migration apply command above and retry.
+If the D1 command fails before the real D1 binding is configured, that is expected in the current unauthenticated state. Once the real binding exists, initialize the local database through the migration apply command above and retry.

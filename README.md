@@ -59,7 +59,9 @@ pnpm deploy:web
 
 The initial D1 migration lives at `platform/migrations/0001_bootstrap.sql`.
 
-Local migration workflow:
+Local Wrangler D1 migration commands are blocked until `apps/web/wrangler.jsonc` contains a real, uncommented `d1_databases` binding with `migrations_dir: "../../platform/migrations"`. With the current commented scaffold, Wrangler falls back to `apps/web/migrations` and the local migration commands fail.
+
+Once the real binding exists, the local workflow is:
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
@@ -106,4 +108,4 @@ pnpm typecheck
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-The Wrangler command depends on a local D1 database existing. Remote D1 commands and real binding IDs depend on Cloudflare authentication.
+The Wrangler command is expected to fail until the real D1 binding is present in `apps/web/wrangler.jsonc`. Remote D1 commands and real binding IDs depend on Cloudflare authentication.
