@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "raid_sl_clan",
+  "project_id": "153153d9-60c2-4396-8011-9d60e2ae71e3"
+}
