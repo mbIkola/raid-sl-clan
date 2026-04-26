@@ -30,12 +30,13 @@ describe("resolvePublicSiteUrl", () => {
 
     vi.doMock("node:fs", () => ({
       existsSync: vi.fn((value: string) => value.endsWith("apps/web/wrangler.jsonc")),
-      readFileSync: vi.fn(() =>
-        JSON.stringify({
-          vars: {
-            PUBLIC_SITE_URL: "https://vibr-clan.org/"
-          }
-        })
+      readFileSync: vi.fn(
+        () => `{
+  // public deployment URL
+  "vars": {
+    "PUBLIC_SITE_URL": "https://vibr-clan.org/",
+  },
+}`
       )
     }));
 

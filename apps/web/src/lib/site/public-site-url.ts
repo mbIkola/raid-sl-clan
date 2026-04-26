@@ -1,12 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-type PublicSiteUrlConfig = {
-  vars?: {
-    PUBLIC_SITE_URL?: string;
-  };
-};
-
 const normalizePublicSiteUrl = (value: string) => {
   const parsed = new URL(value);
 
@@ -35,8 +29,9 @@ export const resolvePublicSiteUrl = () => {
   }
 
   const configText = readFileSync(configPath, "utf8");
-  const config = JSON.parse(configText) as PublicSiteUrlConfig;
-  const configuredValue = config.vars?.PUBLIC_SITE_URL;
+  const configuredValue = configText.match(
+    /["']PUBLIC_SITE_URL["']\s*:\s*["']([^"']+)["']/
+  )?.[1];
 
   if (!configuredValue) {
     throw new Error("PUBLIC_SITE_URL is not configured.");

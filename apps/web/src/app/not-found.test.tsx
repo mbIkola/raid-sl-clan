@@ -10,5 +10,6 @@ describe("NotFoundPage", () => {
     expect(html).toContain("404");
     expect(html).toContain("Back Home");
     expect(html).toContain('href="/"');
+    expect(html).toContain('class="panel-card panel-card--padded editorial-stack"');
   });
 });
