@@ -10,7 +10,7 @@ export default function HomePage() {
       <section className="landing-layout">
         <div className="landing-copy">
           <div className="landing-copy__body">
-            <BrandMark />
+            <BrandMark label="[VIБР] - Raid SL Clan" />
             <h1 className="display-face">A darker front door for the clan.</h1>
             <p>
               Public dashboard, editorial context, and room for future join
@@ -20,7 +20,7 @@ export default function HomePage() {
         </div>
 
         <aside className="panel-card landing-panel">
-          <BrandMark />
+          <BrandMark label="[VIБР] - Raid SL Clan" />
           <div className="landing-panel__stack">
             <h2 className="display-face">Public routes first.</h2>
             <p>

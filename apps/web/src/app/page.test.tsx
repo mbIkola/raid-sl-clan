@@ -11,7 +11,7 @@ describe("HomePage", () => {
       ([, href, label]) => ({ href, label })
     );
 
-    expect(html).toContain("Raid SL Clan");
+    expect(html).toContain("[VIБР] - Raid SL Clan");
     expect(html).toContain("Member login opens later");
     expect(linkMatches).toContainEqual({
       href: "/dashboard",

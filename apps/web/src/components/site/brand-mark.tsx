@@ -1,10 +1,16 @@
 import React from "react";
 
-export function BrandMark() {
+type BrandMarkProps = {
+  label?: string;
+};
+
+export function BrandMark({
+  label = "Raid SL Clan"
+}: BrandMarkProps) {
   return (
     <div className="brand-mark">
       <span className="brand-mark__dot" aria-hidden="true" />
-      <span>Raid SL Clan</span>
+      <span>{label}</span>
     </div>
   );
 }
