@@ -75,4 +75,87 @@ describe("handleTelegramWebhookRequest", () => {
       }
     );
   });
+
+  it("returns 400 when the payload has an invalid structured chat id", async () => {
+    const fetchFn = vi.fn();
+
+    const response = await handleTelegramWebhookRequest({
+      request: new Request("https://raid.example/api/telegram/webhook", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          update_id: 1,
+          message: {
+            message_id: 2,
+            date: 1_714_000_000,
+            chat: {
+              id: {
+                nested: "nope"
+              },
+              type: "private"
+            },
+            text: "/start"
+          }
+        })
+      }),
+      env: {
+        PUBLIC_SITE_URL: "https://raid.example",
+        TELEGRAM_BOT_TOKEN: "bot-token"
+      },
+      fetchFn
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "unsupported-update"
+    });
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it("returns a controlled 5xx response when Telegram delivery fails", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: false }), {
+        status: 500,
+        headers: {
+          "content-type": "application/json"
+        }
+      })
+    );
+
+    const response = await handleTelegramWebhookRequest({
+      request: new Request("https://raid.example/api/telegram/webhook", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({
+          update_id: 1,
+          message: {
+            message_id: 2,
+            date: 1_714_000_000,
+            chat: {
+              id: 42,
+              type: "private"
+            },
+            text: "/start"
+          }
+        })
+      }),
+      env: {
+        PUBLIC_SITE_URL: "https://raid.example",
+        TELEGRAM_BOT_TOKEN: "bot-token"
+      },
+      fetchFn
+    });
+
+    expect(response.status).toBe(502);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "telegram-send-failed"
+    });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
 });

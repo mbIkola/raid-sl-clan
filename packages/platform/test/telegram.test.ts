@@ -32,4 +32,19 @@ describe("normalizeTelegramUpdate", () => {
       })
     ).toBeNull();
   });
+
+  it("returns null when the chat id is not a string or number", () => {
+    expect(
+      normalizeTelegramUpdate({
+        update_id: 1,
+        message: {
+          chat: {
+            id: {
+              nested: "nope"
+            }
+          }
+        }
+      })
+    ).toBeNull();
+  });
 });

@@ -8,7 +8,7 @@ export type TelegramUpdate = {
     date?: number;
     text?: string;
     chat?: {
-      id: number | string;
+      id: unknown;
       type?: string;
     };
   };
@@ -24,7 +24,7 @@ export const normalizeTelegramUpdate = (
 ): NormalizedTelegramUpdate | null => {
   const chatId = update.message?.chat?.id;
 
-  if (chatId === undefined || chatId === null) {
+  if (typeof chatId !== "string" && typeof chatId !== "number") {
     return null;
   }
 

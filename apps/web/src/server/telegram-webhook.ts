@@ -59,12 +59,22 @@ export const handleTelegramWebhookRequest = async ({
   })(normalized);
 
   if (result.kind === "reply") {
-    await sendTelegramMessage({
-      token: env.TELEGRAM_BOT_TOKEN,
-      chatId: result.chatId,
-      text: result.text,
-      fetchFn
-    });
+    try {
+      await sendTelegramMessage({
+        token: env.TELEGRAM_BOT_TOKEN,
+        chatId: result.chatId,
+        text: result.text,
+        fetchFn
+      });
+    } catch {
+      return Response.json(
+        {
+          ok: false,
+          error: "telegram-send-failed"
+        },
+        { status: 502 }
+      );
+    }
   }
 
   return Response.json({ ok: true });
