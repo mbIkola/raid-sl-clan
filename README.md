@@ -12,7 +12,7 @@ The active runtime target is Cloudflare, with one deployable application in `app
 - `packages/ports`: external contracts and repository interfaces
 - `packages/platform`: Cloudflare, Telegram, and D1-facing adapters
 - `platform/migrations`: repository-owned SQL migrations for D1
-- `docs/operator`: operator runbooks for Cloudflare bootstrap and deploy work
+- `docs/operator`: operator runbooks for Cloudflare bootstrap and GitHub Actions delivery-model work
 
 Current foundation scope:
 
@@ -36,7 +36,7 @@ Bootstrap the workspace:
 
 ```bash
 corepack enable
-corepack prepare pnpm@9.0.0 --activate
+corepack prepare pnpm@10.15.1 --activate
 pnpm install
 ```
 
@@ -78,13 +78,16 @@ Preview the Cloudflare worker bundle locally:
 pnpm preview:web
 ```
 
-Deploy the application:
+Standard production release happens from GitHub Actions on `push` to `main`.
+Delivery behavior is defined in `docs/operator/delivery-model.md`.
+
+Deploy the application manually only for bootstrap or emergency recovery:
 
 ```bash
 pnpm deploy:web
 ```
 
-Before a real deploy that depends on D1:
+Before a manual deploy that depends on D1:
 
 1. authenticate Wrangler;
 2. create the production and preview D1 databases;
@@ -94,9 +97,10 @@ Before a real deploy that depends on D1:
 
 ## Operator Docs
 
-Cloudflare bootstrap and operator commands live in:
+Operator runbooks live in:
 
 - `docs/operator/cloudflare-bootstrap.md`
+- `docs/operator/delivery-model.md`
 
 ## Validation
 
