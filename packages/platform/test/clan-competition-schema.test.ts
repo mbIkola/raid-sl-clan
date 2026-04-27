@@ -2,10 +2,10 @@ import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const helperPath = resolve(process.cwd(), "packages/platform/test/helpers/clan-competition-schema-check.mjs");
+const helperPath = resolve(process.cwd(), "packages/platform/test/helpers/clan-competition-schema-check.py");
 
 const runSchemaCheck = <T>(command: string) => {
-  const output = execFileSync(process.execPath, ["--no-warnings", helperPath, command], {
+  const output = execFileSync("python3", [helperPath, command], {
     cwd: process.cwd(),
     encoding: "utf8"
   });
