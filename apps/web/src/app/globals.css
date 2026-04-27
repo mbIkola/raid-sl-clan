@@ -153,6 +153,7 @@ img {
 
 .panel-card.landing-panel {
   background: rgba(9, 12, 16, 0.8);
+  opacity: 0.8;
 }
 
 .landing-panel__stack,
@@ -228,6 +229,12 @@ h2 {
 p {
   color: var(--site-muted);
   line-height: 1.65;
+}
+
+@media (min-width: 901px) {
+  .landing-panel {
+    align-content: start;
+  }
 }
 
 @media (max-width: 900px) {
