@@ -17,7 +17,7 @@ Cloudflare remains the runtime target, but Cloudflare dashboard repository build
 
 ## Prerequisites
 
-- Node.js 20 or newer
+- Node.js 24 or newer
 - `corepack` enabled
 - Cloudflare account access for the target account
 - `wrangler` access through `wrangler login` or `CLOUDFLARE_API_TOKEN`
@@ -179,7 +179,7 @@ pnpm deploy:web
 
 Normal production delivery should happen from GitHub Actions on `push` to `main` as described in `docs/operator/delivery-model.md`.
 
-If a release depends on new schema, apply the remote D1 migrations before or during the deploy runbook. Pretending application code and schema will reconcile themselves is how one earns an outage.
+The standard production workflow now applies remote D1 migrations in GitHub Actions before the deploy step on `main`. If that migration step fails, treat the release as blocked instead of trying to outrun the schema mismatch by wishful thinking.
 
 ## Telegram Webhook Registration
 

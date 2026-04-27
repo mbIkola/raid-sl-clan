@@ -32,7 +32,7 @@ Current foundation scope:
 
 ## Local Development
 
-Bootstrap the workspace:
+Bootstrap the workspace with Node.js 24:
 
 ```bash
 corepack enable

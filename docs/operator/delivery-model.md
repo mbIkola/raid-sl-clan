@@ -41,13 +41,14 @@ Step order:
 
 1. checkout;
 2. install `pnpm@10.15.1`;
-3. install Node.js 20 with `pnpm` cache;
+3. install Node.js 24 with `pnpm` cache;
 4. run `pnpm install --frozen-lockfile`;
 5. run `pnpm test`;
 6. run `pnpm typecheck`;
 7. run `pnpm -r run build`;
 8. run `pnpm --filter @raid/web run cf:build`;
-9. run `pnpm deploy:web` only for `push` to `main`.
+9. run `pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --remote` only for `push` to `main`;
+10. run `pnpm deploy:web` only for `push` to `main`.
 
 ## Cloudflare Dashboard Policy
 
