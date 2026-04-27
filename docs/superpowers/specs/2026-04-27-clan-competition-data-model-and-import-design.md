@@ -100,6 +100,7 @@ Notes:
 - `rotation_number` is required for Hydra and Chimera windows and null for other activity types.
 - `cadence_slot` distinguishes weekly and biweekly windows in a query-friendly way.
 - `starts_at` and `ends_at` are stored even if they can be inferred. Querying and debugging are easier when dates are explicit.
+- The schema should enforce a unique constraint on `(activity_type, season_year, week_of_year, cadence_slot)`.
 
 Expected uniqueness is by the semantic activity window, not by an opaque external ID.
 
@@ -200,11 +201,19 @@ Suggested fields:
 - `player_profile_id`
 - `display_name_at_import`
 - `total_damage`
-- `key_used`
+- `keys_used`
 - `clan_rank`
 - `data_completeness`
 
 This row captures the player-level aggregate even when team detail is absent.
+
+`keys_used` is the imported count of Hydra keys consumed by the player in that window.
+
+`data_completeness` should be a constrained enum-like field with values:
+
+- `aggregate_only`
+- `partial_detail`
+- `full_detail`
 
 ### 7.3 `hydra_team_run`
 
@@ -225,22 +234,24 @@ Suggested fields:
 
 Important decisions:
 
-- `difficulty` is mandatory.
+- `difficulty` is mandatory and Hydra-specific.
 - `team_index` is limited to `1..3`.
 - `player_profile_id` is intentionally duplicated here for simpler analytical reads.
 - `competition_window_id` is also useful here for the same reason.
+- `data_completeness` uses the same constrained values as `hydra_player_result`.
+
+For D1, `difficulty` should be implemented as a constrained text field with a Hydra-specific allowed set rather than a fake shared enum with Chimera.
 
 This denormalization is deliberate. A common query like "show me Myroslav's Hydra teams in the previous rotation" should not require unnecessary gymnastics.
 
-### 7.4 `team_champion_performance`
+### 7.4 `hydra_team_champion_performance`
 
-Champion-level participation inside a Hydra or Chimera team run.
+Champion-level participation inside a Hydra team run.
 
 Suggested fields:
 
 - `id`
-- `team_run_type`
-- `team_run_id`
+- `hydra_team_run_id`
 - `player_profile_id`
 - `competition_window_id`
 - `champion_code`
@@ -253,7 +264,6 @@ Notes:
 - `slot_index` is limited to `1..6`.
 - `champion_code` should be a stable internal champion key, not just free text, once the champion dictionary exists.
 - `build_summary_json` can start as a JSON field because build detail will evolve and is not the first implementation priority.
-- This is a conceptual shared structure. The first implementation may realize it as a concrete Hydra-only table and add the Chimera twin later if that keeps the database and code clearer.
 
 ### 7.5 `chimera_report`, `chimera_player_result`, `chimera_team_run`
 
@@ -262,10 +272,28 @@ Chimera follows the same shape as Hydra with smaller team count.
 Important differences:
 
 - `chimera_team_run.team_index` is limited to `1..2`.
-- `difficulty` is mandatory here as well.
+- `difficulty` is mandatory here as well, but it uses a Chimera-specific allowed set.
 - Chimera windows carry `rotation_number` on the shared calendar layer.
+- `data_completeness` uses the same constrained values as Hydra.
 
-### 7.6 `clan_wars_report`
+### 7.6 `chimera_team_champion_performance`
+
+Champion-level participation inside a Chimera team run.
+
+Suggested fields:
+
+- `id`
+- `chimera_team_run_id`
+- `player_profile_id`
+- `competition_window_id`
+- `champion_code`
+- `slot_index`
+- `damage_done`
+- `build_summary_json`
+
+This table intentionally mirrors the Hydra structure rather than forcing a generic cross-mode foreign key. If a shared read surface is useful later, expose it through a database view.
+
+### 7.7 `clan_wars_report`
 
 One Clan Wars report for one competition window.
 
@@ -277,7 +305,7 @@ Suggested fields:
 - `source_system`
 - `is_partial`
 
-### 7.7 `clan_wars_player_score`
+### 7.8 `clan_wars_player_score`
 
 Player points for one Clan Wars window.
 
@@ -292,7 +320,7 @@ Suggested fields:
 
 This mode remains intentionally simple for now because the source data is simple.
 
-### 7.8 `siege_report`
+### 7.9 `siege_report`
 
 Current Siege model stops at match-level outcome.
 
@@ -314,9 +342,9 @@ Current `result` values can simply be:
 
 Detailed Siege attack and defense modeling is explicitly deferred.
 
-### 7.9 `champion_roster_observation`
+### 7.10 `champion_roster_observation`
 
-Observed evidence that a player owns or used a champion.
+Summary observation that a player owns or used a champion.
 
 Suggested fields:
 
@@ -328,7 +356,9 @@ Suggested fields:
 - `evidence_type`
 - `evidence_ref_id`
 
-This is not a declaration of the player's full roster. It is an evidence table that can gradually support "which champions do we know this player has?"
+This table should enforce uniqueness on `(player_profile_id, champion_code)` and should be maintained through upsert semantics.
+
+This is not a declaration of the player's full roster, and it is not a full evidence log. It is a summary table that can support "which champions do we know this player has?" without exploding in size.
 
 ## 8. Query Shape Expectations
 
@@ -336,13 +366,13 @@ The schema should make common questions direct rather than ceremonial.
 
 Example Hydra team query path:
 
-`competition_window -> hydra_report -> hydra_player_result -> hydra_team_run -> team_champion_performance`
+`competition_window -> hydra_report -> hydra_player_result -> hydra_team_run -> hydra_team_champion_performance`
 
 Because `hydra_team_run` duplicates `player_profile_id` and `competition_window_id`, the practical query can often reduce to:
 
 - filter `hydra_team_run` by `player_profile_id`
 - filter `hydra_team_run` by `competition_window_id`
-- join `team_champion_performance`
+- join `hydra_team_champion_performance`
 - order by `team_index, slot_index`
 
 This is preferred over forcing every analytics query through deeper joins just to appear "clean."
@@ -394,7 +424,7 @@ They should:
 - create or replace the mode-specific report
 - create or update `*_player_result`
 - insert `*_team_run`
-- insert `team_champion_performance`
+- insert `hydra_team_champion_performance` or `chimera_team_champion_performance`
 - insert `champion_roster_observation`
 
 If the detailed import includes player aggregate totals, those totals become the preferred version for that window.
@@ -442,17 +472,19 @@ This preserves data continuity without pretending source names are stable foreve
 - one Hydra report per Hydra window after successful replacement
 - one aggregate player result per player per Hydra report
 - no more than 3 team runs per player result
-- `difficulty` required on every team run
+- `difficulty` required on every team run and constrained to Hydra values
 - no more than 6 champions per team run
 - unique `slot_index` inside a team run
+- `data_completeness` constrained to `aggregate_only`, `partial_detail`, `full_detail`
 
 ### Chimera
 
 - one Chimera report per Chimera window after successful replacement
 - one aggregate player result per player per Chimera report
 - no more than 2 team runs per player result
-- `difficulty` required on every team run
+- `difficulty` required on every team run and constrained to Chimera values
 - no more than 6 champions per team run
+- `data_completeness` constrained to `aggregate_only`, `partial_detail`, `full_detail`
 
 ### Clan Wars
 
@@ -474,7 +506,8 @@ The design implies these tests once implementation begins:
 - create correct `rotation_number` for Hydra and Chimera windows
 - replace import deletes and recreates a mode-specific report cleanly
 - aggregate Hydra import creates player results without team runs
-- detailed Hydra import creates team runs and champion rows
+- detailed Hydra import creates team runs and Hydra champion rows
+- detailed Chimera import creates team runs and Chimera champion rows
 - detailed import wins over aggregate import for the same window
 - alias resolution maps repeated names to the same `player_profile`
 - manual alias consolidation preserves historical results
