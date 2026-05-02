@@ -47,8 +47,8 @@ Additional goals:
 
 Atmospheric dark background with translucent cards:
 
-- Desktop background source: `~/Downloads/dark-elves.png` (16:9).
-- Mobile background source: `~/Downloads/mavara.png` (portrait).
+- Desktop background source: `apps/web/public/images/clan-dashboard/background-desktop-dark-elves.png` (16:9 hero/background image for desktop layouts).
+- Mobile background source: `apps/web/public/images/clan-dashboard/background-mobile-mavara.png` (portrait background image optimized for mobile layouts).
 - Content overlays on semi-transparent panels for readability.
 
 Navigation:
