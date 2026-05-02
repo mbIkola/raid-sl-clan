@@ -1,6 +1,6 @@
 # Cloudflare Bootstrap
 
-This repository deploys from `apps/web` as a Cloudflare-first Next.js + OpenNext application.
+This repository currently deploys from `apps/web` as a Next.js + OpenNext application on Cloudflare.
 There is one deployable surface in the current foundation:
 
 - the public web application;

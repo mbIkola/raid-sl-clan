@@ -1,10 +1,11 @@
 # Raid SL Clan
 
-Cloudflare-first monorepo foundation for the Raid SL Clan website, Telegram webhook, and future D1-backed platform adapters.
+Cloudflare-deployed monorepo foundation for the Raid SL Clan website, Telegram webhook, and future D1-backed platform adapters, with platform-neutral core boundaries to avoid vendor lock-in.
 
 ## Architecture
 
-The active runtime target is Cloudflare, with one deployable application in `apps/web`.
+The current runtime deployment target is Cloudflare, with one deployable application in `apps/web`.
+Core and application layers are intentionally platform-neutral so the runtime can be migrated if needed.
 
 - `apps/web`: Next.js App Router application deployed through OpenNext on Cloudflare
 - `packages/core`: pure domain primitives and business rules
@@ -23,6 +24,7 @@ Current foundation scope:
 
 ## Repository Rules
 
+- Treat Cloudflare as the current deployment target, not a hard architectural dependency.
 - Keep Cloudflare runtime code in `apps/web` and `packages/platform`.
 - Keep `packages/core` free of Cloudflare SDKs, SQL, and transport concerns.
 - Keep `packages/application` focused on orchestration through `packages/ports`.

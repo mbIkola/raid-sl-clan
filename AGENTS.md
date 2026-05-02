@@ -7,7 +7,7 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 
 - Monorepo based on `pnpm` workspaces and TypeScript.
 - GitHub Actions is the source of truth for production build and deploy orchestration.
-- Cloudflare-first architecture with one active deployable in `apps/web`.
+- Cloudflare deployment with one active deployable in `apps/web`, while core architecture remains platform-neutral.
 - Runtime model: public website plus Telegram webhook served from the same Cloudflare deployment.
 - Internal package boundaries exist in `packages/core`, `packages/application`, `packages/ports`, and `packages/platform`.
 - Repository-owned D1 migrations live in `platform/migrations`.
@@ -24,7 +24,7 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 - `pnpm-workspace.yaml`
   - Workspaces: `apps/*`, `packages/*`
 - `README.md`
-  - Cloudflare-first architecture, workflow, and validation guide
+  - Cloudflare deployment model, platform-neutral architecture rules, workflow, and validation guide
 - `tsconfig.base.json`
   - Shared TypeScript settings and path aliases
 - `vitest.config.ts`
@@ -74,7 +74,7 @@ Contains the versioned SQL source of truth for D1 schema changes.
 
 ## What Exists
 
-1. A Cloudflare-first monorepo with one active deployable surface in `apps/web`.
+1. A monorepo currently deployed on Cloudflare with one active deployable surface in `apps/web`.
 2. Shared package boundaries for domain, application, ports, and platform code.
 3. A root Vitest configuration with repository-level tests.
 4. A repository-owned D1 migration directory.
@@ -108,8 +108,9 @@ Not yet verified:
 
 ## Architecture Rules
 
-- Treat Cloudflare as the platform target unless the user explicitly changes direction.
+- Treat Cloudflare as the current runtime target while keeping architecture portable and migration-ready.
 - Keep Cloudflare-specific code in `apps/web` and `packages/platform`.
+- Keep domain and orchestration layers platform-neutral to avoid vendor lock-in.
 - Keep domain rules in `packages/core`.
 - Keep orchestration in `packages/application`.
 - Keep infrastructure contracts in `packages/ports`.

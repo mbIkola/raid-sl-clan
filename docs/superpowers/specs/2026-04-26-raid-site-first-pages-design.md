@@ -6,7 +6,7 @@ Related issue: `raid-sl-clan-8gx`
 
 ## 1. Context
 
-The repository already contains the current Cloudflare-first Next.js application in `apps/web`, but the public site surface is still a single MVP shell. Historical artwork existed before the cleanup in commit `b0067a8`:
+The repository already contains the current Next.js application in `apps/web` deployed on Cloudflare, but the public site surface is still a single MVP shell. Historical artwork existed before the cleanup in commit `b0067a8`:
 
 - `apps/web/src/assets/landing/*`
 - `apps/web/src/assets/404/*`
