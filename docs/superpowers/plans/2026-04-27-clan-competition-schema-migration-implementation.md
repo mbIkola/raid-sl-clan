@@ -1,5 +1,7 @@
 # Clan Competition Schema Migration Implementation Plan
 
+Status: Completed for local and production schema state (validated on 2026-05-03); preview migration parity is optional and currently not enforced
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add the first D1 migration for clan competition tracking, covering shared competition windows, player identity, mode-specific reports, team-level Hydra/Chimera detail, and summary roster observations.
@@ -16,7 +18,7 @@
 - Create: `packages/platform/test/clan-competition-schema.test.ts`
 - Test: `packages/platform/test/clan-competition-schema.test.ts`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```ts
 import { readFileSync } from "node:fs";
@@ -66,13 +68,13 @@ describe("clan competition schema migration", () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `pnpm test -- packages/platform/test/clan-competition-schema.test.ts`
 
 Expected: FAIL because `0002_clan_competition_schema.sql` and the new tables do not exist yet.
 
-- [ ] **Step 3: Extend the test with the most important constraints**
+- [x] **Step 3: Extend the test with the most important constraints**
 
 ```ts
 it("stores champion roster observations as a summary table with a unique player/champion key", () => {
@@ -100,13 +102,13 @@ it("constrains Hydra and Chimera data completeness fields", () => {
 });
 ```
 
-- [ ] **Step 4: Run test to verify it still fails for the right reason**
+- [x] **Step 4: Run test to verify it still fails for the right reason**
 
 Run: `pnpm test -- packages/platform/test/clan-competition-schema.test.ts`
 
 Expected: FAIL because the migration still has not been implemented, not because the test file is malformed.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add packages/platform/test/clan-competition-schema.test.ts
@@ -119,7 +121,7 @@ git commit -m "test: add clan competition schema contract tests"
 - Create: `platform/migrations/0002_clan_competition_schema.sql`
 - Modify: `packages/platform/test/clan-competition-schema.test.ts`
 
-- [ ] **Step 1: Write the migration SQL**
+- [x] **Step 1: Write the migration SQL**
 
 ```sql
 CREATE TABLE IF NOT EXISTS competition_window (
@@ -154,7 +156,7 @@ CREATE TABLE IF NOT EXISTS siege_report (...);
 CREATE TABLE IF NOT EXISTS champion_roster_observation (...);
 ```
 
-- [ ] **Step 2: Include the critical constraints**
+- [x] **Step 2: Include the critical constraints**
 
 ```sql
 CHECK (data_completeness IN ('aggregate_only', 'partial_detail', 'full_detail'))
@@ -169,13 +171,13 @@ UNIQUE (chimera_team_run_id, slot_index)
 UNIQUE (player_profile_id, champion_code)
 ```
 
-- [ ] **Step 3: Run the schema contract test**
+- [x] **Step 3: Run the schema contract test**
 
 Run: `pnpm test -- packages/platform/test/clan-competition-schema.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 4: Refine the test if the SQL needs one more assertion**
+- [x] **Step 4: Refine the test if the SQL needs one more assertion**
 
 ```ts
 it("stores Hydra keys as keys_used", () => {
@@ -186,7 +188,7 @@ it("stores Hydra keys as keys_used", () => {
 });
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/migrations/0002_clan_competition_schema.sql packages/platform/test/clan-competition-schema.test.ts
@@ -198,31 +200,31 @@ git commit -m "feat: add clan competition schema migration"
 **Files:**
 - Modify: none unless verification reveals a real schema bug
 
-- [ ] **Step 1: Run the focused tests**
+- [x] **Step 1: Run the focused tests**
 
 Run: `pnpm test -- packages/platform/test/clan-competition-schema.test.ts`
 
 Expected: PASS
 
-- [ ] **Step 2: Run the full test suite**
+- [x] **Step 2: Run the full test suite**
 
 Run: `pnpm test`
 
 Expected: PASS with the existing suite still green.
 
-- [ ] **Step 3: Apply local D1 migrations**
+- [x] **Step 3: Apply local D1 migrations**
 
 Run: `pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local`
 
 Expected: SUCCESS with `0001_bootstrap.sql` and `0002_clan_competition_schema.sql` applied locally.
 
-- [ ] **Step 4: List local migrations**
+- [x] **Step 4: List local migrations**
 
 Run: `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local`
 
 Expected: both migrations listed as applied locally.
 
-- [ ] **Step 5: Commit verification-only fixes if needed**
+- [x] **Step 5: Commit verification-only fixes if needed**
 
 ```bash
 git add <any adjusted files>

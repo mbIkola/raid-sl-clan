@@ -4,7 +4,7 @@
 
 ## Goal
 
-Replace the current legacy scaffold with a Cloudflare-first monorepo foundation that can ship:
+Replace the current legacy scaffold with a monorepo foundation deployed on Cloudflare that can ship:
 
 - a publicly reachable website;
 - a minimal Telegram webhook bot;
@@ -17,7 +17,7 @@ This is a foundation spec for the first sub-project only. It does not attempt to
 ### In scope
 
 - remove the current legacy delivery/infrastructure scaffold from the active path;
-- establish a Cloudflare-first monorepo structure;
+- establish a Cloudflare-deployed monorepo structure with platform-neutral core boundaries;
 - create one `Next.js + OpenNext` deployable for both site delivery and Telegram webhook handling;
 - define architectural boundaries for `core`, `application`, `ports`, `platform`, and `apps/web`;
 - initialize `beads` in this repository with GitHub integration;
@@ -350,7 +350,7 @@ The following legacy scaffold is intentionally removed from the repository:
 - `services/mcp`;
 - `infra/compose`.
 
-These pieces represent a previous direction that conflicts with the Cloudflare-first MVP foundation and should not remain as semi-supported baggage.
+These pieces represent a previous direction that conflicts with the current Cloudflare-deployed MVP foundation and should not remain as semi-supported baggage.
 
 ## Error Handling
 

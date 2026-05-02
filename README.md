@@ -1,10 +1,11 @@
 # Raid SL Clan
 
-Cloudflare-first monorepo foundation for the Raid SL Clan website, Telegram webhook, and future D1-backed platform adapters.
+Cloudflare-deployed monorepo foundation for the Raid SL Clan website, Telegram webhook, and future D1-backed platform adapters, with platform-neutral core boundaries to avoid vendor lock-in.
 
 ## Architecture
 
-The active runtime target is Cloudflare, with one deployable application in `apps/web`.
+The current runtime deployment target is Cloudflare, with one deployable application in `apps/web`.
+Core and application layers are intentionally platform-neutral so the runtime can be migrated if needed.
 
 - `apps/web`: Next.js App Router application deployed through OpenNext on Cloudflare
 - `packages/core`: pure domain primitives and business rules
@@ -23,6 +24,7 @@ Current foundation scope:
 
 ## Repository Rules
 
+- Treat Cloudflare as the current deployment target, not a hard architectural dependency.
 - Keep Cloudflare runtime code in `apps/web` and `packages/platform`.
 - Keep `packages/core` free of Cloudflare SDKs, SQL, and transport concerns.
 - Keep `packages/application` focused on orchestration through `packages/ports`.
@@ -68,7 +70,10 @@ pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-The local migrations list command has been verified to succeed and report `0001_bootstrap.sql`.
+The local migration apply and list commands have been verified with `0001_bootstrap.sql` and `0002_clan_competition_schema.sql`; after apply, local list reports no unapplied migrations.
+
+For remote validation (authenticated operator context), production D1 migration list has been verified to report no unapplied migrations.
+Preview D1 is currently optional and may intentionally remain behind production.
 
 Remote D1 creation, recreation, and remote migration work still require authenticated Cloudflare operator access. The repo contains committed binding IDs, but this repository does not pretend remote infrastructure can be changed without valid Cloudflare credentials.
 
@@ -93,7 +98,7 @@ pnpm deploy:web
 Before a manual deploy that depends on D1:
 
 1. authenticate Wrangler;
-2. confirm the target production and preview D1 databases match the committed binding, or update the binding if an authenticated operator has replaced them;
+2. confirm the target production D1 database matches the committed binding (and check preview only if your workflow depends on preview parity), or update the binding if an authenticated operator has replaced it;
 3. apply migrations remotely if the release depends on schema changes;
 4. deploy.
 

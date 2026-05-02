@@ -1,16 +1,18 @@
 # Raid SL Clan Knowledge Base
 
 This file is a working knowledge base for agents and humans operating in this repository.
-It reflects repository state as of 2026-04-26 and should be corrected when code and docs drift.
+It reflects repository state as of 2026-05-03 and should be corrected when code and docs drift.
 
 ## Current Snapshot
 
 - Monorepo based on `pnpm` workspaces and TypeScript.
 - GitHub Actions is the source of truth for production build and deploy orchestration.
-- Cloudflare-first architecture with one active deployable in `apps/web`.
+- Cloudflare deployment with one active deployable in `apps/web`, while core architecture remains platform-neutral.
 - Runtime model: public website plus Telegram webhook served from the same Cloudflare deployment.
 - Internal package boundaries exist in `packages/core`, `packages/application`, `packages/ports`, and `packages/platform`.
 - Repository-owned D1 migrations live in `platform/migrations`.
+- D1 schema migrations `0001_bootstrap.sql` and `0002_clan_competition_schema.sql` are applied for local development and the remote production database.
+- Remote preview D1 is currently not maintained as a required baseline and may intentionally lag behind production schema.
 - `pnpm typecheck` passes across the current workspace skeleton.
 - Tests exist and should be run from the workspace root with `pnpm test`.
 
@@ -24,7 +26,7 @@ It reflects repository state as of 2026-04-26 and should be corrected when code 
 - `pnpm-workspace.yaml`
   - Workspaces: `apps/*`, `packages/*`
 - `README.md`
-  - Cloudflare-first architecture, workflow, and validation guide
+  - Cloudflare deployment model, platform-neutral architecture rules, workflow, and validation guide
 - `tsconfig.base.json`
   - Shared TypeScript settings and path aliases
 - `vitest.config.ts`
@@ -74,7 +76,7 @@ Contains the versioned SQL source of truth for D1 schema changes.
 
 ## What Exists
 
-1. A Cloudflare-first monorepo with one active deployable surface in `apps/web`.
+1. A monorepo currently deployed on Cloudflare with one active deployable surface in `apps/web`.
 2. Shared package boundaries for domain, application, ports, and platform code.
 3. A root Vitest configuration with repository-level tests.
 4. A repository-owned D1 migration directory.
@@ -84,7 +86,6 @@ Contains the versioned SQL source of truth for D1 schema changes.
 ## What Does Not Exist Yet
 
 - Additional deployable services
-- Verified authenticated Cloudflare operator access from this environment for remote D1 create, recreate, or migration work
 - Broader product/domain implementation
 - Authentication or authorization
 
@@ -97,19 +98,25 @@ Verified directly:
 - `pnpm test`
 - `pnpm -r run build`
 - `pnpm --filter @raid/web run cf:build`
-- `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local` lists `0001_bootstrap.sql`
+- `pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local`
+- `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local` reports no unapplied migrations after local apply
+- `pnpm --filter @raid/web exec wrangler whoami` with token-based auth (`CLOUDFLARE_API_TOKEN`)
+- `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --remote` reports no unapplied migrations for production
+- `pnpm --filter @raid/web exec wrangler d1 execute raid-sl-clan --remote --command "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"` lists the expected competition schema tables on production
+- `pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --remote --preview` reports unapplied migrations for preview
 - `apps/web` has no nested `.git`
 
 Not yet verified:
 
 - Authenticated Cloudflare resource creation or recreation from this environment
-- Remote D1 migration execution from this environment
+- Remote preview D1 migration apply from this environment (preview is currently optional and not treated as a release gate)
 - Any production deployment path
 
 ## Architecture Rules
 
-- Treat Cloudflare as the platform target unless the user explicitly changes direction.
+- Treat Cloudflare as the current runtime target while keeping architecture portable and migration-ready.
 - Keep Cloudflare-specific code in `apps/web` and `packages/platform`.
+- Keep domain and orchestration layers platform-neutral to avoid vendor lock-in.
 - Keep domain rules in `packages/core`.
 - Keep orchestration in `packages/application`.
 - Keep infrastructure contracts in `packages/ports`.
