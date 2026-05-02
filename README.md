@@ -70,7 +70,10 @@ pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --local
 pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
-The local migrations list command has been verified to succeed and report `0001_bootstrap.sql`.
+The local migration apply and list commands have been verified with `0001_bootstrap.sql` and `0002_clan_competition_schema.sql`; after apply, local list reports no unapplied migrations.
+
+For remote validation (authenticated operator context), production D1 migration list has been verified to report no unapplied migrations.
+Preview D1 is currently optional and may intentionally remain behind production.
 
 Remote D1 creation, recreation, and remote migration work still require authenticated Cloudflare operator access. The repo contains committed binding IDs, but this repository does not pretend remote infrastructure can be changed without valid Cloudflare credentials.
 
@@ -95,7 +98,7 @@ pnpm deploy:web
 Before a manual deploy that depends on D1:
 
 1. authenticate Wrangler;
-2. confirm the target production and preview D1 databases match the committed binding, or update the binding if an authenticated operator has replaced them;
+2. confirm the target production D1 database matches the committed binding (and check preview only if your workflow depends on preview parity), or update the binding if an authenticated operator has replaced it;
 3. apply migrations remotely if the release depends on schema changes;
 4. deploy.
 

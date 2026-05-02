@@ -1,5 +1,7 @@
 # Raid SL Clan First Public Pages Implementation Plan
 
+Status: Completed and documented as implemented (validated on 2026-05-03)
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the current one-page MVP shell in `apps/web` with four first-pass public pages backed by restored artwork, current App Router metadata assets, and a mobile-first public dashboard shell.
@@ -34,7 +36,7 @@
 - Create/restore: `apps/web/src/app/android-chrome-192x192.png`
 - Create/restore: `apps/web/src/app/android-chrome-512x512.png`
 
-- [ ] **Step 1: Write the failing test for the site content module**
+- [x] **Step 1: Write the failing test for the site content module**
 
 ```ts
 import { describe, expect, it } from "vitest";
@@ -74,13 +76,13 @@ describe("site content", () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails because the module does not exist yet**
+- [x] **Step 2: Run the test to verify it fails because the module does not exist yet**
 
 Run: `pnpm test -- apps/web/src/lib/site/content.test.ts`
 
 Expected: FAIL with a module resolution error for `./content`.
 
-- [ ] **Step 3: Write the minimal `content.ts` implementation**
+- [x] **Step 3: Write the minimal `content.ts` implementation**
 
 ```ts
 export const siteMetadataCopy = {
@@ -140,13 +142,13 @@ export const aboutPageSections = [
 ] as const;
 ```
 
-- [ ] **Step 4: Run the content test again and confirm green**
+- [x] **Step 4: Run the content test again and confirm green**
 
 Run: `pnpm test -- apps/web/src/lib/site/content.test.ts`
 
 Expected: PASS with 4 passing assertions.
 
-- [ ] **Step 5: Restore the historical artwork, font, and metadata source files from `b0067a8`**
+- [x] **Step 5: Restore the historical artwork, font, and metadata source files from `b0067a8`**
 
 Run:
 
@@ -176,7 +178,7 @@ git show b0067a8:apps/web/src/assets/meta/android-chrome-512x512.png > apps/web/
 
 Expected: restored binary assets exist at the new paths and `git status --short` shows them as new files on this branch.
 
-- [ ] **Step 6: Commit Task 1**
+- [x] **Step 6: Commit Task 1**
 
 ```bash
 git add \
@@ -203,7 +205,7 @@ git commit -m "feat: restore site artwork inputs"
 - Create: `apps/web/src/app/manifest.ts`
 - Test: `apps/web/src/app/layout.test.tsx`
 
-- [ ] **Step 1: Write the failing layout test**
+- [x] **Step 1: Write the failing layout test**
 
 ```tsx
 import React from "react";
@@ -234,13 +236,13 @@ describe("RootLayout", () => {
 });
 ```
 
-- [ ] **Step 2: Run the layout test to verify it fails on the current MVP layout**
+- [x] **Step 2: Run the layout test to verify it fails on the current MVP layout**
 
 Run: `pnpm test -- apps/web/src/app/layout.test.tsx`
 
 Expected: FAIL because the current `metadata.title` is a string and the rendered body does not include the `site-root` class.
 
-- [ ] **Step 3: Implement `layout.tsx` with local font wiring and richer metadata**
+- [x] **Step 3: Implement `layout.tsx` with local font wiring and richer metadata**
 
 ```tsx
 import type { Metadata } from "next";
@@ -292,7 +294,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 }
 ```
 
-- [ ] **Step 4: Add the App Router manifest route using the restored icon assets**
+- [x] **Step 4: Add the App Router manifest route using the restored icon assets**
 
 ```ts
 import type { MetadataRoute } from "next";
@@ -320,7 +322,7 @@ export default function manifest(): MetadataRoute.Manifest {
 }
 ```
 
-- [ ] **Step 5: Replace `globals.css` with the shared tokens and layout primitives the new pages need**
+- [x] **Step 5: Replace `globals.css` with the shared tokens and layout primitives the new pages need**
 
 ```css
 @import "tailwindcss";
@@ -537,13 +539,13 @@ img {
 }
 ```
 
-- [ ] **Step 6: Run the layout test again**
+- [x] **Step 6: Run the layout test again**
 
 Run: `pnpm test -- apps/web/src/app/layout.test.tsx`
 
 Expected: PASS with metadata and `site-root` assertions satisfied.
 
-- [ ] **Step 7: Commit Task 2**
+- [x] **Step 7: Commit Task 2**
 
 ```bash
 git add \
@@ -563,7 +565,7 @@ git commit -m "feat: rebuild public site shell metadata"
 - Modify: `apps/web/src/app/page.tsx`
 - Modify: `apps/web/src/app/page.test.tsx`
 
-- [ ] **Step 1: Replace the old landing test with one that describes the new root route**
+- [x] **Step 1: Replace the old landing test with one that describes the new root route**
 
 ```tsx
 import React from "react";
@@ -585,13 +587,13 @@ describe("HomePage", () => {
 });
 ```
 
-- [ ] **Step 2: Run the landing test and verify it fails on the old MVP shell**
+- [x] **Step 2: Run the landing test and verify it fails on the old MVP shell**
 
 Run: `pnpm test -- apps/web/src/app/page.test.tsx`
 
 Expected: FAIL because the current landing page still renders the Cloudflare MVP copy and has no `About` link or login placeholder.
 
-- [ ] **Step 3: Create the shared atmospheric primitives**
+- [x] **Step 3: Create the shared atmospheric primitives**
 
 `apps/web/src/components/site/brand-mark.tsx`
 
@@ -656,7 +658,7 @@ export function PageBackdrop({ imagePath, children }: PageBackdropProps) {
 }
 ```
 
-- [ ] **Step 4: Implement the new landing page**
+- [x] **Step 4: Implement the new landing page**
 
 ```tsx
 import { AtmosphericLink } from "../components/site/atmospheric-link";
@@ -705,13 +707,13 @@ export default function HomePage() {
 }
 ```
 
-- [ ] **Step 5: Run the landing test again**
+- [x] **Step 5: Run the landing test again**
 
 Run: `pnpm test -- apps/web/src/app/page.test.tsx`
 
 Expected: PASS with the new landing copy and links present.
 
-- [ ] **Step 6: Commit Task 3**
+- [x] **Step 6: Commit Task 3**
 
 ```bash
 git add \
@@ -731,7 +733,7 @@ git commit -m "feat: add atmospheric landing route"
 - Create: `apps/web/src/app/not-found.tsx`
 - Create: `apps/web/src/app/not-found.test.tsx`
 
-- [ ] **Step 1: Write the failing tests for `About` and `404`**
+- [x] **Step 1: Write the failing tests for `About` and `404`**
 
 `apps/web/src/app/about/page.test.tsx`
 
@@ -772,13 +774,13 @@ describe("NotFoundPage", () => {
 });
 ```
 
-- [ ] **Step 2: Run the tests and confirm they fail because the routes do not exist yet**
+- [x] **Step 2: Run the tests and confirm they fail because the routes do not exist yet**
 
 Run: `pnpm test -- apps/web/src/app/about/page.test.tsx apps/web/src/app/not-found.test.tsx`
 
 Expected: FAIL with module resolution errors for both route files.
 
-- [ ] **Step 3: Implement the editorial `About` page**
+- [x] **Step 3: Implement the editorial `About` page**
 
 ```tsx
 import { AtmosphericLink } from "../../components/site/atmospheric-link";
@@ -816,7 +818,7 @@ export default function AboutPage() {
 }
 ```
 
-- [ ] **Step 4: Implement the custom `not-found.tsx` route**
+- [x] **Step 4: Implement the custom `not-found.tsx` route**
 
 ```tsx
 import { AtmosphericLink } from "../components/site/atmospheric-link";
@@ -840,13 +842,13 @@ export default function NotFoundPage() {
 }
 ```
 
-- [ ] **Step 5: Run the route tests again**
+- [x] **Step 5: Run the route tests again**
 
 Run: `pnpm test -- apps/web/src/app/about/page.test.tsx apps/web/src/app/not-found.test.tsx`
 
 Expected: PASS with both new atmospheric pages rendering.
 
-- [ ] **Step 6: Commit Task 4**
+- [x] **Step 6: Commit Task 4**
 
 ```bash
 git add \
@@ -865,7 +867,7 @@ git commit -m "feat: add editorial public routes"
 - Create: `apps/web/src/app/dashboard/page.tsx`
 - Create: `apps/web/src/app/dashboard/page.test.tsx`
 
-- [ ] **Step 1: Write the failing dashboard test**
+- [x] **Step 1: Write the failing dashboard test**
 
 ```tsx
 import React from "react";
@@ -889,13 +891,13 @@ describe("DashboardPage", () => {
 });
 ```
 
-- [ ] **Step 2: Run the dashboard test and verify it fails because the route does not exist**
+- [x] **Step 2: Run the dashboard test and verify it fails because the route does not exist**
 
 Run: `pnpm test -- apps/web/src/app/dashboard/page.test.tsx`
 
 Expected: FAIL with a module resolution error for `./page`.
 
-- [ ] **Step 3: Create the dashboard shell primitives**
+- [x] **Step 3: Create the dashboard shell primitives**
 
 `apps/web/src/components/site/panel-card.tsx`
 
@@ -935,7 +937,7 @@ export function DashboardNav() {
 }
 ```
 
-- [ ] **Step 4: Implement the public dashboard route**
+- [x] **Step 4: Implement the public dashboard route**
 
 ```tsx
 import { BrandMark } from "../../components/site/brand-mark";
@@ -967,13 +969,13 @@ export default function DashboardPage() {
 }
 ```
 
-- [ ] **Step 5: Run the dashboard test again**
+- [x] **Step 5: Run the dashboard test again**
 
 Run: `pnpm test -- apps/web/src/app/dashboard/page.test.tsx`
 
 Expected: PASS with the shell title, menu summary, and four section titles present.
 
-- [ ] **Step 6: Commit Task 5**
+- [x] **Step 6: Commit Task 5**
 
 ```bash
 git add \
@@ -989,25 +991,25 @@ git commit -m "feat: add public dashboard route"
 **Files:**
 - Modify only if verification uncovers defects
 
-- [ ] **Step 1: Run the targeted web app tests together**
+- [x] **Step 1: Run the targeted web app tests together**
 
 Run: `pnpm test -- apps/web/src/app/layout.test.tsx apps/web/src/app/page.test.tsx apps/web/src/app/about/page.test.tsx apps/web/src/app/not-found.test.tsx apps/web/src/app/dashboard/page.test.tsx apps/web/src/lib/site/content.test.ts`
 
 Expected: PASS for all new route and content tests.
 
-- [ ] **Step 2: Run the full repository test suite**
+- [x] **Step 2: Run the full repository test suite**
 
 Run: `pnpm test`
 
 Expected: PASS across the repo.
 
-- [ ] **Step 3: Run the workspace typecheck**
+- [x] **Step 3: Run the workspace typecheck**
 
 Run: `pnpm typecheck`
 
 Expected: PASS across `apps/*` and `packages/*`.
 
-- [ ] **Step 4: Start the local web app and review the routes in the browser**
+- [x] **Step 4: Start the local web app and review the routes in the browser**
 
 Run:
 
@@ -1034,10 +1036,9 @@ Expected:
 - `About` reads like an editorial page instead of a dashboard clone
 - `404` stays readable on top of the restored dark artwork
 
-- [ ] **Step 5: Commit the final polish or verification-driven fixes**
+- [x] **Step 5: Commit the final polish or verification-driven fixes**
 
 ```bash
 git add apps/web
 git commit -m "feat: finalize first public website pages"
 ```
-

@@ -29,7 +29,7 @@ Cloudflare remains the runtime target, but Cloudflare dashboard repository build
 3. Create a temporary Hello World Worker to verify the account can issue a `*.workers.dev` URL.
 4. Run `pnpm --filter @raid/web exec wrangler login`.
 5. Confirm auth with `pnpm --filter @raid/web exec wrangler whoami`.
-6. Confirm the committed D1 binding in `apps/web/wrangler.jsonc` still matches the intended `raid-sl-clan` and `raid-sl-clan-preview` databases.
+6. Confirm the committed D1 binding in `apps/web/wrangler.jsonc` still matches the intended production database (`raid-sl-clan`) and, if used, the preview database (`raid-sl-clan-preview`).
 7. Create or replace those D1 databases only if an authenticated operator is intentionally changing remote infrastructure, then update `apps/web/wrangler.jsonc` with the returned IDs and keep `migrations_dir` set to `../../platform/migrations`.
 8. Create `.dev.vars` from `apps/web/.dev.vars.example`.
 9. Apply migrations locally with the committed binding, and apply them remotely only when authenticated Cloudflare access is available for the target database.
@@ -68,6 +68,7 @@ Token-based auth:
 
 ```bash
 export CLOUDFLARE_API_TOKEN=replace-me
+export CLOUDFLARE_ACCOUNT_ID=replace-me
 pnpm --filter @raid/web exec wrangler whoami
 ```
 
@@ -128,6 +129,7 @@ pnpm --filter @raid/web exec wrangler d1 migrations list raid-sl-clan --local
 ```
 
 The local migrations list command has already been verified to succeed and report `0001_bootstrap.sql`.
+After applying both committed migrations locally (`0001` and `0002`), local list should report no unapplied migrations.
 
 Create or replace the remote databases only after authentication succeeds and only when operator work actually requires new database IDs:
 
@@ -161,6 +163,12 @@ Apply migrations to the remote database only when authenticated Cloudflare acces
 
 ```bash
 pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --remote
+```
+
+If preview parity is required for your workflow, apply preview migrations explicitly:
+
+```bash
+pnpm --filter @raid/web exec wrangler d1 migrations apply raid-sl-clan --remote --preview
 ```
 
 ## Preview And Deploy
@@ -215,3 +223,5 @@ pnpm typecheck
 ```
 
 The local D1 command should use the committed binding and succeed. If remote D1 commands fail without Cloudflare authentication, that is expected; remote creation, replacement, and migration work remain operator-gated.
+Production remote migration list should return no unapplied migrations on a healthy release path.
+Preview migration status is optional unless your team explicitly treats preview parity as a gate.
