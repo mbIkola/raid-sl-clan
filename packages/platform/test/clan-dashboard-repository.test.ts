@@ -377,7 +377,7 @@ describe("clan dashboard SQL", () => {
 
     const repository = createD1ClanDashboardRepository(d1);
     const archive = await repository.getClanWarsArchive({
-      nowIso: "2026-05-03T11:22:00.000Z",
+      nowIso: "2031-05-03T11:22:00.000Z",
       windowLimit: 12
     });
 

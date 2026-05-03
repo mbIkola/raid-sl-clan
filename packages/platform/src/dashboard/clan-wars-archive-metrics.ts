@@ -2,6 +2,7 @@ import type { ClanWarsArchiveDeclineRow, ClanWarsArchiveStabilityRow } from "@ra
 
 export type ClanWarsPlayerWindowPointsRow = {
   windowStart: string;
+  playerId: number;
   playerName: string;
   points: number;
 };
@@ -16,12 +17,16 @@ const getSortedWindowsDesc = (rows: ClanWarsPlayerWindowPointsRow[]) =>
   );
 
 const groupPlayerPoints = (rows: ClanWarsPlayerWindowPointsRow[]) => {
-  const grouped = new Map<string, Map<string, number>>();
+  const grouped = new Map<number, { playerName: string; pointsByWindow: Map<string, number> }>();
 
   for (const row of rows) {
-    const perPlayer = grouped.get(row.playerName) ?? new Map<string, number>();
-    perPlayer.set(row.windowStart, row.points);
-    grouped.set(row.playerName, perPlayer);
+    const existing = grouped.get(row.playerId) ?? {
+      playerName: row.playerName,
+      pointsByWindow: new Map<string, number>()
+    };
+
+    existing.pointsByWindow.set(row.windowStart, row.points);
+    grouped.set(row.playerId, existing);
   }
 
   return grouped;
@@ -39,7 +44,8 @@ export const buildClanWarsStabilityRows = (
   const grouped = groupPlayerPoints(rows);
 
   return Array.from(grouped.entries())
-    .map(([playerName, pointsByWindow]) => {
+    .map(([, player]) => {
+      const { playerName, pointsByWindow } = player;
       const values = windows.map((windowStart) => pointsByWindow.get(windowStart) ?? 0);
       const windowsPlayed = values.filter((points) => points > 0).length;
       const avgPoints =
@@ -88,7 +94,8 @@ export const buildClanWarsDeclineRows = (
   }
 
   return Array.from(grouped.entries())
-    .map(([playerName, pointsByWindow]) => {
+    .map(([, player]) => {
+      const { playerName, pointsByWindow } = player;
       const recentValues = recentWindows.map((windowStart) => pointsByWindow.get(windowStart) ?? 0);
       const baselineValues = baselineWindows.map((windowStart) => pointsByWindow.get(windowStart) ?? 0);
       const windowsPlayed = windows.filter((windowStart) => (pointsByWindow.get(windowStart) ?? 0) > 0).length;

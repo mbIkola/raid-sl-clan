@@ -69,6 +69,7 @@ type ClanWarsArchiveHistoryDbRow = {
 
 type ClanWarsArchivePlayerWindowDbRow = {
   window_start: string;
+  player_id: number;
   player_name: string;
   points: number;
 };
@@ -218,9 +219,10 @@ export const createD1ClanDashboardRepository = (
     },
     async getClanWarsArchive({ nowIso, windowLimit }): Promise<ClanWarsArchiveData> {
       const [historyRows, playerWindowRows] = await Promise.all([
-        queryRows<ClanWarsArchiveHistoryDbRow>(selectClanWarsArchiveHistorySql, windowLimit),
+        queryRows<ClanWarsArchiveHistoryDbRow>(selectClanWarsArchiveHistorySql, nowIso, windowLimit),
         queryRows<ClanWarsArchivePlayerWindowDbRow>(
           selectClanWarsArchivePlayerWindowSql,
+          nowIso,
           windowLimit
         )
       ]);
@@ -228,6 +230,7 @@ export const createD1ClanDashboardRepository = (
       const clanWarsAnchor = getClanWarsAnchorStateUtc(nowIso);
       const playerRows: ClanWarsPlayerWindowPointsRow[] = playerWindowRows.map((row) => ({
         windowStart: row.window_start,
+        playerId: row.player_id,
         playerName: row.player_name,
         points: asNumber(row.points)
       }));
