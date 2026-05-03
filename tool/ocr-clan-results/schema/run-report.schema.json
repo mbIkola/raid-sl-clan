@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibr-clan.org/schema/clan-wars-import-report.schema.json",
+  "title": "Clan Wars OCR Canonical Import Report",
+  "type": "object",
+  "required": ["generatedAt", "inputDirectory", "activity", "tournaments"],
+  "properties": {
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "inputDirectory": { "type": "string" },
+    "activity": { "type": "string", "const": "clan_wars" },
+    "tournaments": {
+      "type": "array",
+      "items": { "$ref": "./page-ocr-clan-wars.schema.json" }
+    }
+  },
+  "additionalProperties": false
+}
