@@ -1,12 +1,12 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
 import { LocaleProvider } from "./locale-provider";
 import { LocalizedNumber } from "./localized-number";
 
 declare global {
-  // eslint-disable-next-line no-var
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 
@@ -56,5 +56,10 @@ describe("LocalizedNumber", () => {
     });
 
     expect(container.textContent ?? "").toMatch(/12[\s\u00A0\u202F]345/);
+  });
+
+  it("renders deterministic placeholder on server render", () => {
+    const html = renderToString(<LocalizedNumber value={12_345} />);
+    expect(html).toContain("—");
   });
 });

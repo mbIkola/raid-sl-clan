@@ -17,18 +17,24 @@ export function CountdownTimer({
 }: CountdownTimerProps) {
   const { t, i18n, ready } = useTranslation("units", { useSuspense: false });
   const [value, setValue] = useState("—");
-  const endTriggeredRef = useRef(false);
+  const completedTargetIsoRef = useRef<string | null>(null);
+  const targetEpoch = React.useMemo(() => {
+    if (!targetIso) {
+      return null;
+    }
+
+    const parsed = Date.parse(targetIso);
+    return Number.isNaN(parsed) ? null : parsed;
+  }, [targetIso]);
+  const hasInvalidTargetIso = Boolean(targetIso) && targetEpoch === null;
 
   useEffect(() => {
     if (!targetIso) {
-      setValue("—");
       return;
     }
 
-    const target = new Date(targetIso);
-    if (Number.isNaN(target.valueOf())) {
+    if (targetEpoch === null) {
       console.warn("[dashboard/countdown] invalid-target", { targetIso });
-      setValue("—");
       return;
     }
 
@@ -49,13 +55,13 @@ export function CountdownTimer({
         };
 
     const tick = () => {
-      const msRemaining = target.valueOf() - Date.now();
+      const msRemaining = targetEpoch - Date.now();
 
       if (msRemaining <= 0) {
         setValue(endedLabel);
 
-        if (!endTriggeredRef.current) {
-          endTriggeredRef.current = true;
+        if (completedTargetIsoRef.current !== targetIso) {
+          completedTargetIsoRef.current = targetIso;
           onTimerEnd?.();
         }
 
@@ -66,7 +72,6 @@ export function CountdownTimer({
       timer = setTimeout(tick, getNextTickMs(msRemaining));
     };
 
-    endTriggeredRef.current = false;
     tick();
 
     return () => {
@@ -74,7 +79,11 @@ export function CountdownTimer({
         clearTimeout(timer);
       }
     };
-  }, [endedLabel, i18n.resolvedLanguage, onTimerEnd, ready, t, targetIso]);
+  }, [endedLabel, i18n.resolvedLanguage, onTimerEnd, ready, t, targetEpoch, targetIso]);
+
+  if (!targetIso || hasInvalidTargetIso) {
+    return <span>—</span>;
+  }
 
   return <span>{value}</span>;
 }

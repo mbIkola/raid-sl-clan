@@ -73,3 +73,5 @@ export const useLocale = (): LocaleContextValue => {
 
   return context;
 };
+
+export const useOptionalLocale = (): LocaleContextValue | null => useContext(LocaleContext);

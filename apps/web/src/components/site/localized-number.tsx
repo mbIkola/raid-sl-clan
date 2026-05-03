@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useMemo } from "react";
-import { useLocale as readLocaleContext } from "./locale-provider";
+import React, { useMemo, useSyncExternalStore } from "react";
+import { useOptionalLocale } from "./locale-provider";
 
 type LocalizedNumberProps = {
   value: number;
@@ -11,13 +11,10 @@ type LocalizedNumberProps = {
   minimumFractionDigits?: number;
 };
 
-const useLocaleOrFallback = (): string => {
-  try {
-    return readLocaleContext().locale;
-  } catch {
-    return "ru-RU";
-  }
-};
+const subscribe = () => () => undefined;
+
+const useHydrated = (): boolean =>
+  useSyncExternalStore(subscribe, () => true, () => false);
 
 export function LocalizedNumber({
   value,
@@ -26,20 +23,31 @@ export function LocalizedNumber({
   maximumFractionDigits,
   minimumFractionDigits
 }: LocalizedNumberProps) {
-  const locale = useLocaleOrFallback();
+  const localeContext = useOptionalLocale();
+  const locale = localeContext?.locale ?? "ru-RU";
+  const hydrated = useHydrated();
+
+  const options = useMemo<Intl.NumberFormatOptions>(
+    () => ({
+      notation,
+      compactDisplay,
+      maximumFractionDigits,
+      minimumFractionDigits
+    }),
+    [compactDisplay, maximumFractionDigits, minimumFractionDigits, notation]
+  );
 
   const text = useMemo(() => {
+    if (!hydrated) {
+      return "—";
+    }
+
     try {
-      return new Intl.NumberFormat(locale, {
-        notation,
-        compactDisplay,
-        maximumFractionDigits,
-        minimumFractionDigits
-      }).format(value);
+      return new Intl.NumberFormat(locale, options).format(value);
     } catch {
       return String(value);
     }
-  }, [compactDisplay, locale, maximumFractionDigits, minimumFractionDigits, notation, value]);
+  }, [hydrated, locale, options, value]);
 
-  return <span>{text}</span>;
+  return <span suppressHydrationWarning>{text}</span>;
 }
