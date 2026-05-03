@@ -2,6 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { LocaleProvider } from "../../components/site/locale-provider";
+import { initI18n } from "../../lib/i18n/i18n";
 
 vi.mock("../../server/dashboard/get-clan-dashboard-snapshot", () => ({
   getClanDashboardSnapshot: vi.fn(async () => ({
@@ -86,19 +87,27 @@ vi.mock("../../server/dashboard/get-clan-dashboard-snapshot", () => ({
 import DashboardPage from "./page";
 
 describe("DashboardPage", () => {
-  it("renders four dashboard zones and hydra as default activity", async () => {
+  it("renders translated dashboard zones and language-switcher labels", async () => {
+    await initI18n("uk");
     const html = renderToStaticMarkup(
       <LocaleProvider>{await DashboardPage()}</LocaleProvider>
     );
+    const linkMatches = Array.from(
+      html.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g),
+      ([, href, label]) => ({ href, label })
+    );
 
-    expect(html).toContain("Зона боеготовности");
-    expect(html).toContain("Зона слияния");
-    expect(html).toContain("Зона топ перформеров");
-    expect(html).toContain("Зона трендов");
+    expect(html).toContain("Зона бойової готовності");
+    expect(html).toContain("Зона злиття");
+    expect(html).toContain("Зона топ виконавців");
+    expect(html).toContain("Зона трендів");
     expect(html).toContain("Hydra");
     expect(html).toContain('aria-pressed="true">Hydra</button>');
-    expect(html).toContain('<a href="/dashboard/clan-wars">KT</a>');
-    expect(html).toContain("Слияния сейчас нет");
-    expect(html).toContain("<select");
+    expect(linkMatches).toContainEqual({ href: "/", label: "Головна" });
+    expect(linkMatches).toContainEqual({ href: "/about", label: "Про проєкт" });
+    expect(linkMatches).toContainEqual({ href: "/dashboard", label: "Дашборд" });
+    expect(linkMatches).toContainEqual({ href: "/dashboard/clan-wars", label: "KT" });
+    expect(html).toContain('aria-label="Мова інтерфейсу"');
+    expect(html).toContain('<option value="uk">Українська</option>');
   });
 });
