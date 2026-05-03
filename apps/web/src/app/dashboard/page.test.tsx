@@ -89,6 +89,7 @@ describe("DashboardPage", () => {
     expect(html).toContain("Зона тренды");
     expect(html).toContain("Hydra");
     expect(html).toContain('aria-pressed="true">Hydra</button>');
+    expect(html).toContain('href="/dashboard/clan-wars"');
     expect(html).toContain("Слияния сейчас нет");
   });
 });
