@@ -10,10 +10,41 @@ type DashboardReadinessZoneProps = {
 
 const endedLabel = "Закончено, идет подсчет результатов";
 
-const hasNumericReadinessValue = (
-  card: DashboardReadinessCard
-): card is DashboardReadinessCard & { keysSpent: number; totalScore: number } =>
-  typeof card.keysSpent === "number" && typeof card.totalScore === "number";
+const getPrimaryValue = (card: DashboardReadinessCard) => {
+  if (card.metricKind === "clan_wars_state") {
+    return card.clanWarsState === "active"
+      ? "Идет клановый турнир"
+      : "Подготовка к следующему окну";
+  }
+
+  if (card.metricKind === "siege_preparation") {
+    return "Подготовка к старту";
+  }
+
+  return (
+    <>
+      Ключи: <LocalizedNumber value={card.keysSpent} /> • Урон:{" "}
+      <LocalizedNumber
+        value={card.totalScore}
+        notation="compact"
+        compactDisplay="short"
+        maximumFractionDigits={1}
+      />
+    </>
+  );
+};
+
+const getStatusLabel = (card: DashboardReadinessCard) => {
+  if (card.metricKind === "clan_wars_state") {
+    return card.hasPersonalRewards ? "с личными наградами" : "без";
+  }
+
+  if (card.metricKind === "siege_preparation") {
+    return "Следующее окно";
+  }
+
+  return "Сброс окна";
+};
 
 export function DashboardReadinessZone({ cards }: DashboardReadinessZoneProps) {
   return (
@@ -23,20 +54,8 @@ export function DashboardReadinessZone({ cards }: DashboardReadinessZoneProps) {
         {cards.map((card) => (
           <Link key={card.activity} href={card.href} className="dashboard-readiness-card">
             <h3 className="display-face">{card.title}</h3>
-            {hasNumericReadinessValue(card) ? (
-              <p>
-                Ключи: <LocalizedNumber value={card.keysSpent} /> • Урон:{" "}
-                <LocalizedNumber
-                  value={card.totalScore}
-                  notation="compact"
-                  compactDisplay="short"
-                  maximumFractionDigits={1}
-                />
-              </p>
-            ) : (
-              <p>{card.primaryValue}</p>
-            )}
-            <p>{card.statusLabel}</p>
+            <p>{getPrimaryValue(card)}</p>
+            <p>{getStatusLabel(card)}</p>
             <p>
               <CountdownTimer targetIso={card.targetAt} endedLabel={endedLabel} />
             </p>

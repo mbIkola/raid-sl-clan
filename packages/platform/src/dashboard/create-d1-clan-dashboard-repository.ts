@@ -158,7 +158,7 @@ export const createD1ClanDashboardRepository = (
       const chimeraKeysSpent = asNumber(chimeraReadiness?.keys_spent);
       const chimeraTotalScore = asNumber(chimeraReadiness?.total_score);
 
-      const readiness: DashboardReadinessCard[] = [
+      const readiness = [
         {
           activity: "hydra",
           title: "Hydra",
@@ -200,7 +200,7 @@ export const createD1ClanDashboardRepository = (
           hasPersonalRewards: null,
           href: "/dashboard/siege"
         }
-      ];
+      ] satisfies DashboardReadinessCard[];
 
       return {
         readiness,

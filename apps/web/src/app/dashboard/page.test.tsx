@@ -11,8 +11,10 @@ vi.mock("../../server/dashboard/get-clan-dashboard-snapshot", () => ({
         title: "Hydra",
         targetAt: "2026-05-03T12:00:00.000Z",
         targetKind: "reset",
-        statusLabel: "Сброс окна",
-        primaryValue: "Ключи: 90 • Урон: 1,000,000",
+        metricKind: "keys_and_damage",
+        keysSpent: 90,
+        totalScore: 1000000,
+        hasPersonalRewards: null,
         href: "/dashboard/hydra"
       },
       {
@@ -20,8 +22,10 @@ vi.mock("../../server/dashboard/get-clan-dashboard-snapshot", () => ({
         title: "Chimera",
         targetAt: "2026-05-03T12:00:00.000Z",
         targetKind: "reset",
-        statusLabel: "Сброс окна",
-        primaryValue: "Ключи: 60 • Урон: 700,000",
+        metricKind: "keys_and_damage",
+        keysSpent: 60,
+        totalScore: 700000,
+        hasPersonalRewards: null,
         href: "/dashboard/chimera"
       },
       {
@@ -29,8 +33,9 @@ vi.mock("../../server/dashboard/get-clan-dashboard-snapshot", () => ({
         title: "KT",
         targetAt: "2026-05-04T12:00:00.000Z",
         targetKind: "start",
-        statusLabel: "с личными наградами",
-        primaryValue: "Подготовка к следующему окну",
+        metricKind: "clan_wars_state",
+        clanWarsState: "upcoming",
+        hasPersonalRewards: true,
         href: "/dashboard/clan-wars"
       },
       {
@@ -38,8 +43,8 @@ vi.mock("../../server/dashboard/get-clan-dashboard-snapshot", () => ({
         title: "Siege",
         targetAt: "2026-05-04T12:00:00.000Z",
         targetKind: "start",
-        statusLabel: "Следующее окно",
-        primaryValue: "Подготовка к старту",
+        metricKind: "siege_preparation",
+        hasPersonalRewards: null,
         href: "/dashboard/siege"
       }
     ],
