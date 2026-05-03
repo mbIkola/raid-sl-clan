@@ -297,6 +297,30 @@ img {
   background: linear-gradient(90deg, #91a4bc, #ced8e6);
 }
 
+.dashboard-kt-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.dashboard-kt-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-kt-table th,
+.dashboard-kt-table td {
+  border: 1px solid var(--site-border);
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.dashboard-kt-table th {
+  color: var(--site-soft);
+  font-weight: 600;
+  background: rgba(6, 8, 11, 0.62);
+}
+
 .dashboard-nav summary {
   cursor: pointer;
   list-style: none;
@@ -360,6 +384,10 @@ p {
     background-image:
       linear-gradient(180deg, rgba(6, 8, 11, 0.74), rgba(6, 8, 11, 0.9)),
       url("/images/clan-dashboard/background-desktop-dark-elves.png");
+  }
+
+  .dashboard-kt-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

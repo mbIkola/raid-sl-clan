@@ -50,6 +50,47 @@ export type ClanDashboardData = {
   };
 };
 
+export type ClanWarsHeader = {
+  targetAt: string;
+  targetKind: "start" | "reset";
+  eventStartAt: string;
+  eventEndsAt: string;
+  hasPersonalRewards: boolean;
+};
+
+export type ClanWarsArchiveHistoryRow = {
+  windowStart: string;
+  windowEnd: string;
+  hasPersonalRewards: boolean;
+  clanTotalPoints: number;
+  activeContributors: number;
+  topPlayerName: string;
+  topPlayerPoints: number;
+};
+
+export type ClanWarsArchiveStabilityRow = {
+  playerName: string;
+  windowsPlayed: number;
+  avgPoints: number;
+  bestPoints: number;
+  lastWindowPoints: number;
+  consistencyScore: number;
+};
+
+export type ClanWarsArchiveDeclineRow = {
+  playerName: string;
+  recentAvg: number;
+  baselineAvg: number;
+  delta: number;
+};
+
+export type ClanWarsArchiveData = {
+  header: ClanWarsHeader;
+  history: ClanWarsArchiveHistoryRow[];
+  stability: ClanWarsArchiveStabilityRow[];
+  decline: ClanWarsArchiveDeclineRow[];
+};
+
 export type SiegeDefenseSource = {
   getCurrentRanking(): DashboardTopBottom;
 };
@@ -76,4 +117,8 @@ export type ClanDashboardSnapshot = {
 
 export type ClanDashboardRepository = {
   getSnapshot(input: { nowIso: string; trendWeeks: number }): Promise<ClanDashboardData>;
+};
+
+export type ClanWarsArchiveRepository = {
+  getClanWarsArchive(input: { nowIso: string; windowLimit: number }): Promise<ClanWarsArchiveData>;
 };

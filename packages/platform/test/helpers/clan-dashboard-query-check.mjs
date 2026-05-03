@@ -71,6 +71,56 @@ FROM latest_window lw
 LEFT JOIN latest_report lr ON 1 = 1;
 `;
 
+const selectClanWarsArchiveHistorySql = `
+WITH recent_windows AS (
+  SELECT
+    cw.id,
+    cw.starts_at,
+    cw.ends_at,
+    cwr.id AS report_id,
+    cwr.has_personal_rewards
+  FROM competition_window cw
+  JOIN clan_wars_report cwr
+    ON cwr.id = (
+      SELECT cwr2.id
+      FROM clan_wars_report cwr2
+      WHERE cwr2.competition_window_id = cw.id
+      ORDER BY cwr2.created_at DESC, cwr2.id DESC
+      LIMIT 1
+    )
+  WHERE cw.activity_type = 'clan_wars'
+    AND cw.ends_at <= ?
+  ORDER BY cw.starts_at DESC, cw.id DESC
+  LIMIT ?
+)
+SELECT
+  rw.starts_at,
+  rw.ends_at,
+  rw.has_personal_rewards AS has_personal_rewards,
+  COALESCE(SUM(cwps.points), 0) AS clan_total_points,
+  COALESCE(COUNT(DISTINCT CASE WHEN cwps.points > 0 THEN cwps.player_profile_id END), 0) AS active_contributors,
+  COALESCE((
+    SELECT pp.main_nickname
+    FROM clan_wars_player_score cwps2
+    JOIN player_profile pp ON pp.id = cwps2.player_profile_id
+    WHERE cwps2.clan_wars_report_id = rw.report_id
+    ORDER BY cwps2.points DESC, pp.main_nickname ASC
+    LIMIT 1
+  ), '-') AS top_player_name,
+  COALESCE((
+    SELECT cwps2.points
+    FROM clan_wars_player_score cwps2
+    JOIN player_profile pp ON pp.id = cwps2.player_profile_id
+    WHERE cwps2.clan_wars_report_id = rw.report_id
+    ORDER BY cwps2.points DESC, pp.main_nickname ASC
+    LIMIT 1
+  ), 0) AS top_player_points
+FROM recent_windows rw
+LEFT JOIN clan_wars_player_score cwps ON cwps.clan_wars_report_id = rw.report_id
+GROUP BY rw.id, rw.starts_at, rw.ends_at, rw.has_personal_rewards, rw.report_id
+ORDER BY rw.starts_at DESC, rw.id DESC;
+`;
+
 const applyMigrations = () => {
   const database = new DatabaseSync(":memory:");
 
@@ -309,6 +359,102 @@ const runClanWarsReadinessScopedStatus = (database) => {
   });
 };
 
+const runKtArchiveHistoryAggregate = (database) => {
+  const alpha = insertPlayer(database, "Alpha");
+  const beta = insertPlayer(database, "Beta");
+  const gamma = insertPlayer(database, "Gamma");
+
+  const latestWindowId = insertCompetitionWindow(database, {
+    activityType: "clan_wars",
+    seasonYear: 2031,
+    week: 11,
+    cadence: "biweekly",
+    rotationNumber: null,
+    startsAt: "2031-04-12T00:00:00Z",
+    endsAt: "2031-04-14T00:00:00Z",
+    label: "cw-a"
+  });
+
+  const previousWindowId = insertCompetitionWindow(database, {
+    activityType: "clan_wars",
+    seasonYear: 2031,
+    week: 10,
+    cadence: "biweekly",
+    rotationNumber: null,
+    startsAt: "2031-03-29T00:00:00Z",
+    endsAt: "2031-03-31T00:00:00Z",
+    label: "cw-b"
+  });
+
+  const latestImportId = insertReportImport(database, "cw-a");
+  const previousImportId = insertReportImport(database, "cw-b");
+
+  const latestReportId = Number(
+    database
+      .prepare(
+        [
+          "INSERT INTO clan_wars_report",
+          "(competition_window_id, report_import_id, source_system, is_partial, has_personal_rewards, created_at)",
+          "VALUES (?, ?, ?, ?, ?, ?)"
+        ].join(" ")
+      )
+      .run(
+        latestWindowId,
+        latestImportId,
+        "unit",
+        0,
+        1,
+        "2031-04-12T02:00:00Z"
+      ).lastInsertRowid
+  );
+
+  const previousReportId = Number(
+    database
+      .prepare(
+        [
+          "INSERT INTO clan_wars_report",
+          "(competition_window_id, report_import_id, source_system, is_partial, has_personal_rewards, created_at)",
+          "VALUES (?, ?, ?, ?, ?, ?)"
+        ].join(" ")
+      )
+      .run(
+        previousWindowId,
+        previousImportId,
+        "unit",
+        0,
+        0,
+        "2031-03-29T02:00:00Z"
+      ).lastInsertRowid
+  );
+
+  const insertScore = (reportId, windowId, playerId, playerName, points) => {
+    database
+      .prepare(
+        [
+          "INSERT INTO clan_wars_player_score",
+          "(clan_wars_report_id, competition_window_id, player_profile_id, display_name_at_import, points)",
+          "VALUES (?, ?, ?, ?, ?)"
+        ].join(" ")
+      )
+      .run(reportId, windowId, playerId, playerName, points);
+  };
+
+  insertScore(latestReportId, latestWindowId, alpha, "Alpha", 220);
+  insertScore(latestReportId, latestWindowId, beta, "Beta", 110);
+  insertScore(latestReportId, latestWindowId, gamma, "Gamma", 100);
+  insertScore(previousReportId, previousWindowId, alpha, "Alpha", 180);
+  insertScore(previousReportId, previousWindowId, beta, "Beta", 50);
+
+  const rows = database
+    .prepare(selectClanWarsArchiveHistorySql)
+    .all("2031-05-01T00:00:00Z", 12);
+
+  emit({
+    ok: true,
+    rows
+  });
+};
+
 const database = applyMigrations();
 const command = process.argv[2];
 
@@ -321,6 +467,9 @@ switch (command) {
     break;
   case "kt-readiness-window-scoped-status":
     runClanWarsReadinessScopedStatus(database);
+    break;
+  case "kt-archive-history-aggregate":
+    runKtArchiveHistoryAggregate(database);
     break;
   default:
     emit({ ok: false, error: `unknown-command:${command}` });

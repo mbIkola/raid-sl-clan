@@ -8,6 +8,7 @@ export function DashboardNav() {
       <nav className="dashboard-nav__links" aria-label="Dashboard">
         <Link href="/">Landing</Link>
         <Link href="/about">About</Link>
+        <Link href="/dashboard/clan-wars">KT</Link>
       </nav>
     </details>
   );

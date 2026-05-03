@@ -1,11 +1,22 @@
 import type {
   ClanDashboardData,
   ClanDashboardRepository,
+  ClanWarsArchiveData,
+  ClanWarsArchiveRepository,
   DashboardRankingRow,
   DashboardReadinessCard,
   DashboardTrendPoint,
   DashboardTopBottom
 } from "@raid/ports";
+import {
+  buildClanWarsDeclineRows,
+  buildClanWarsStabilityRows,
+  type ClanWarsPlayerWindowPointsRow
+} from "./clan-wars-archive-metrics";
+import {
+  selectClanWarsArchiveHistorySql,
+  selectClanWarsArchivePlayerWindowSql
+} from "./clan-wars-archive-sql";
 import {
   selectChimeraRankingSql,
   selectChimeraReadinessSql,
@@ -44,6 +55,23 @@ type RankingRow = {
 type TrendRow = {
   ends_at: string;
   total_score: number;
+};
+
+type ClanWarsArchiveHistoryDbRow = {
+  starts_at: string;
+  ends_at: string;
+  has_personal_rewards: number;
+  clan_total_points: number;
+  active_contributors: number;
+  top_player_name: string;
+  top_player_points: number;
+};
+
+type ClanWarsArchivePlayerWindowDbRow = {
+  window_start: string;
+  player_id: number;
+  player_name: string;
+  points: number;
 };
 
 const mapRankingRows = (rows: RankingRow[]): DashboardRankingRow[] =>
@@ -88,7 +116,7 @@ const toTrend = (rows: TrendRow[]): DashboardTrendPoint[] =>
 
 export const createD1ClanDashboardRepository = (
   db: D1DatabaseLike
-): ClanDashboardRepository => {
+): ClanDashboardRepository & ClanWarsArchiveRepository => {
   const queryRows = async <T>(sql: string, ...bindValues: unknown[]) => {
     const prepared = db.prepare(sql).bind(...bindValues);
     const result = await prepared.all<T>();
@@ -187,6 +215,45 @@ export const createD1ClanDashboardRepository = (
           hydra: toTrend(hydraTrendRows),
           chimera: toTrend(chimeraTrendRows)
         }
+      };
+    },
+    async getClanWarsArchive({ nowIso, windowLimit }): Promise<ClanWarsArchiveData> {
+      const [historyRows, playerWindowRows] = await Promise.all([
+        queryRows<ClanWarsArchiveHistoryDbRow>(selectClanWarsArchiveHistorySql, nowIso, windowLimit),
+        queryRows<ClanWarsArchivePlayerWindowDbRow>(
+          selectClanWarsArchivePlayerWindowSql,
+          nowIso,
+          windowLimit
+        )
+      ]);
+
+      const clanWarsAnchor = getClanWarsAnchorStateUtc(nowIso);
+      const playerRows: ClanWarsPlayerWindowPointsRow[] = playerWindowRows.map((row) => ({
+        windowStart: row.window_start,
+        playerId: row.player_id,
+        playerName: row.player_name,
+        points: asNumber(row.points)
+      }));
+
+      return {
+        header: {
+          targetAt: clanWarsAnchor.targetAt,
+          targetKind: clanWarsAnchor.targetKind,
+          eventStartAt: clanWarsAnchor.eventStartAt,
+          eventEndsAt: clanWarsAnchor.eventEndsAt,
+          hasPersonalRewards: clanWarsAnchor.hasPersonalRewards
+        },
+        history: historyRows.map((row) => ({
+          windowStart: row.starts_at,
+          windowEnd: row.ends_at,
+          hasPersonalRewards: row.has_personal_rewards === 1,
+          clanTotalPoints: asNumber(row.clan_total_points),
+          activeContributors: asNumber(row.active_contributors),
+          topPlayerName: row.top_player_name ?? "-",
+          topPlayerPoints: asNumber(row.top_player_points)
+        })),
+        stability: buildClanWarsStabilityRows(playerRows, windowLimit),
+        decline: buildClanWarsDeclineRows(playerRows)
       };
     }
   };
