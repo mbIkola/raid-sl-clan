@@ -9,6 +9,8 @@ export type DashboardReadinessCard = {
   targetKind: "reset" | "start";
   statusLabel: string;
   primaryValue: string;
+  keysSpent?: number;
+  totalScore?: number;
   href: string;
 };
 

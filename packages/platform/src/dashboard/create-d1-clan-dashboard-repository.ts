@@ -82,7 +82,7 @@ const mapRankingRows = (rows: RankingRow[]): DashboardRankingRow[] =>
 
 const asNumber = (value: number | undefined) => (typeof value === "number" ? value : 0);
 
-const formatCompactNumber = (value: number) => value.toLocaleString("en-US");
+const formatNumber = (value: number) => value.toLocaleString("en-US");
 
 const computeNextBiweeklyStart = (startIso: string | null, nowIso: string): string | null => {
   if (!startIso) {
@@ -155,6 +155,10 @@ export const createD1ClanDashboardRepository = (
       const [chimeraReadiness] = chimeraReadinessRows;
       const [siegeReadiness] = siegeReadinessRows;
       const clanWarsAnchor = getClanWarsAnchorStateUtc(nowIso);
+      const hydraKeysSpent = asNumber(hydraReadiness?.keys_spent);
+      const hydraTotalScore = asNumber(hydraReadiness?.total_score);
+      const chimeraKeysSpent = asNumber(chimeraReadiness?.keys_spent);
+      const chimeraTotalScore = asNumber(chimeraReadiness?.total_score);
 
       const readiness: DashboardReadinessCard[] = [
         {
@@ -163,9 +167,9 @@ export const createD1ClanDashboardRepository = (
           targetAt: getNextHydraResetAnchorUtc(nowIso),
           targetKind: "reset",
           statusLabel: "Сброс окна",
-          primaryValue: `Ключи: ${asNumber(hydraReadiness?.keys_spent)} • Урон: ${formatCompactNumber(
-            asNumber(hydraReadiness?.total_score)
-          )}`,
+          primaryValue: `Ключи: ${hydraKeysSpent} • Урон: ${formatNumber(hydraTotalScore)}`,
+          keysSpent: hydraKeysSpent,
+          totalScore: hydraTotalScore,
           href: "/dashboard/hydra"
         },
         {
@@ -174,9 +178,9 @@ export const createD1ClanDashboardRepository = (
           targetAt: getNextChimeraResetAnchorUtc(nowIso),
           targetKind: "reset",
           statusLabel: "Сброс окна",
-          primaryValue: `Ключи: ${asNumber(chimeraReadiness?.keys_spent)} • Урон: ${formatCompactNumber(
-            asNumber(chimeraReadiness?.total_score)
-          )}`,
+          primaryValue: `Ключи: ${chimeraKeysSpent} • Урон: ${formatNumber(chimeraTotalScore)}`,
+          keysSpent: chimeraKeysSpent,
+          totalScore: chimeraTotalScore,
           href: "/dashboard/chimera"
         },
         {

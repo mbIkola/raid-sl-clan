@@ -3,7 +3,7 @@
 :root {
   color-scheme: dark;
   --site-bg: #07090d;
-  --site-panel: rgba(9, 12, 16, 0.78);
+  --site-panel: #090c1040;
   --site-panel-strong: rgba(6, 8, 11, 0.88);
   --site-border: rgba(196, 210, 223, 0.14);
   --site-text: #f3f4f6;
@@ -116,7 +116,6 @@ img {
   border-radius: 1.25rem;
   background: var(--site-panel);
   box-shadow: 0 1.5rem 3rem -2rem var(--site-shadow);
-  backdrop-filter: blur(14px);
 }
 
 .panel-card--padded {
@@ -203,7 +202,7 @@ img {
   border: 1px solid var(--site-border);
   border-radius: 1rem;
   padding: 0.9rem;
-  background: rgba(6, 8, 11, 0.58);
+  background: var(--site-panel);
 }
 
 .dashboard-fusion-active {
@@ -220,6 +219,12 @@ img {
 .dashboard-performers-block {
   display: grid;
   gap: 0.6rem;
+}
+
+.dashboard-performers-columns,
+.dashboard-trends-columns {
+  display: grid;
+  gap: 1rem;
 }
 
 .dashboard-activity-chips {
@@ -388,6 +393,14 @@ p {
 
   .dashboard-kt-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard-performers-columns,
+  .dashboard-trends-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 }
 
