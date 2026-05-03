@@ -43,13 +43,7 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
   const [timeZone] = useState(resolveTimeZone);
   const [isI18nReady, setIsI18nReady] = useState(() => i18n.isInitialized);
   const setLanguage = useCallback((nextLanguage: SupportedLanguage) => {
-    setLanguageState((previousLanguage) => {
-      if (previousLanguage !== nextLanguage) {
-        setIsI18nReady(false);
-      }
-
-      return nextLanguage;
-    });
+    setLanguageState(nextLanguage);
   }, []);
 
   useEffect(() => {
