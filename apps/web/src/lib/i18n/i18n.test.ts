@@ -80,4 +80,17 @@ describe("i18n bootstrap", () => {
     expect(i18n.isInitialized).toBe(true);
     expect(i18n.resolvedLanguage).toBe("ru");
   });
+
+  it("switches language through changeLanguage after initial init", async () => {
+    const { i18n, initI18n } = await importI18nModule();
+    const changeLanguageSpy = vi.spyOn(i18n, "changeLanguage");
+
+    await initI18n("ru");
+    const callsBeforeSwitch = changeLanguageSpy.mock.calls.length;
+    await initI18n("en");
+
+    expect(changeLanguageSpy.mock.calls.length).toBeGreaterThan(callsBeforeSwitch);
+    expect(changeLanguageSpy.mock.calls.at(-1)).toEqual(["en"]);
+    expect(i18n.resolvedLanguage).toBe("en");
+  });
 });
