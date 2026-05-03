@@ -221,6 +221,12 @@ img {
   gap: 0.6rem;
 }
 
+.dashboard-performers-columns,
+.dashboard-trends-columns {
+  display: grid;
+  gap: 1rem;
+}
+
 .dashboard-activity-chips {
   display: flex;
   gap: 0.5rem;
@@ -359,6 +365,14 @@ p {
     background-image:
       linear-gradient(180deg, rgba(6, 8, 11, 0.74), rgba(6, 8, 11, 0.9)),
       url("/images/clan-dashboard/background-desktop-dark-elves.png");
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard-performers-columns,
+  .dashboard-trends-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 }
 

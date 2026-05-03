@@ -59,106 +59,108 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
   const showKtNote = topActivity === "clan_wars" || bottomActivity === "clan_wars";
 
   return (
-    <section className="panel-card panel-card--padded dashboard-stack">
+    <section className="panel-card panel-card--padded dashboard-stack dashboard-performers-zone">
       <h2 className="display-face">Зона топ перформеров</h2>
 
-      <article className="dashboard-performers-block">
-        <h3>Top 5 Performers</h3>
-        <div className="dashboard-activity-chips" role="tablist" aria-label="Top performers activity selector">
-          {activities.map((activity) => (
-            <button
-              key={`top-${activity}`}
-              type="button"
-              className="dashboard-chip"
-              aria-pressed={topActivity === activity}
-              onClick={() => setTopActivity(activity)}
-            >
-              {activityLabels[activity]}
-            </button>
-          ))}
-        </div>
-
-        <div
-          className="dashboard-swipe-surface"
-          onTouchStart={(event) => {
-            topTouchStartX.current = event.touches[0]?.clientX ?? null;
-          }}
-          onTouchEnd={(event) => {
-            handleSwipe(
-              topTouchStartX.current,
-              event.changedTouches[0]?.clientX ?? 0,
-              topActivity,
-              setTopActivity
-            );
-            topTouchStartX.current = null;
-          }}
-        >
-          <ol className="dashboard-ranking-list">
-            {rankings[topActivity].top5.map((row) => (
-              <li key={`top-${topActivity}-${row.playerName}`}>
-                <span>{row.playerName}</span>
-                <strong>
-                  <LocalizedNumber
-                    value={row.score}
-                    notation="compact"
-                    compactDisplay="short"
-                    maximumFractionDigits={1}
-                  />
-                </strong>
-              </li>
+      <div className="dashboard-performers-columns">
+        <article className="dashboard-performers-block">
+          <h3>Top 5 Performers</h3>
+          <div className="dashboard-activity-chips" role="tablist" aria-label="Top performers activity selector">
+            {activities.map((activity) => (
+              <button
+                key={`top-${activity}`}
+                type="button"
+                className="dashboard-chip"
+                aria-pressed={topActivity === activity}
+                onClick={() => setTopActivity(activity)}
+              >
+                {activityLabels[activity]}
+              </button>
             ))}
-          </ol>
-        </div>
-      </article>
+          </div>
 
-      <article className="dashboard-performers-block">
-        <h3>Bottom 5</h3>
-        <div className="dashboard-activity-chips" role="tablist" aria-label="Bottom performers activity selector">
-          {activities.map((activity) => (
-            <button
-              key={`bottom-${activity}`}
-              type="button"
-              className="dashboard-chip"
-              aria-pressed={bottomActivity === activity}
-              onClick={() => setBottomActivity(activity)}
-            >
-              {activityLabels[activity]}
-            </button>
-          ))}
-        </div>
+          <div
+            className="dashboard-swipe-surface"
+            onTouchStart={(event) => {
+              topTouchStartX.current = event.touches[0]?.clientX ?? null;
+            }}
+            onTouchEnd={(event) => {
+              handleSwipe(
+                topTouchStartX.current,
+                event.changedTouches[0]?.clientX ?? 0,
+                topActivity,
+                setTopActivity
+              );
+              topTouchStartX.current = null;
+            }}
+          >
+            <ol className="dashboard-ranking-list">
+              {rankings[topActivity].top5.map((row) => (
+                <li key={`top-${topActivity}-${row.playerName}`}>
+                  <span>{row.playerName}</span>
+                  <strong>
+                    <LocalizedNumber
+                      value={row.score}
+                      notation="compact"
+                      compactDisplay="short"
+                      maximumFractionDigits={1}
+                    />
+                  </strong>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </article>
 
-        <div
-          className="dashboard-swipe-surface"
-          onTouchStart={(event) => {
-            bottomTouchStartX.current = event.touches[0]?.clientX ?? null;
-          }}
-          onTouchEnd={(event) => {
-            handleSwipe(
-              bottomTouchStartX.current,
-              event.changedTouches[0]?.clientX ?? 0,
-              bottomActivity,
-              setBottomActivity
-            );
-            bottomTouchStartX.current = null;
-          }}
-        >
-          <ol className="dashboard-ranking-list">
-            {rankings[bottomActivity].bottom5.map((row) => (
-              <li key={`bottom-${bottomActivity}-${row.playerName}`}>
-                <span>{row.playerName}</span>
-                <strong>
-                  <LocalizedNumber
-                    value={row.score}
-                    notation="compact"
-                    compactDisplay="short"
-                    maximumFractionDigits={1}
-                  />
-                </strong>
-              </li>
+        <article className="dashboard-performers-block">
+          <h3>Bottom 5</h3>
+          <div className="dashboard-activity-chips" role="tablist" aria-label="Bottom performers activity selector">
+            {activities.map((activity) => (
+              <button
+                key={`bottom-${activity}`}
+                type="button"
+                className="dashboard-chip"
+                aria-pressed={bottomActivity === activity}
+                onClick={() => setBottomActivity(activity)}
+              >
+                {activityLabels[activity]}
+              </button>
             ))}
-          </ol>
-        </div>
-      </article>
+          </div>
+
+          <div
+            className="dashboard-swipe-surface"
+            onTouchStart={(event) => {
+              bottomTouchStartX.current = event.touches[0]?.clientX ?? null;
+            }}
+            onTouchEnd={(event) => {
+              handleSwipe(
+                bottomTouchStartX.current,
+                event.changedTouches[0]?.clientX ?? 0,
+                bottomActivity,
+                setBottomActivity
+              );
+              bottomTouchStartX.current = null;
+            }}
+          >
+            <ol className="dashboard-ranking-list">
+              {rankings[bottomActivity].bottom5.map((row) => (
+                <li key={`bottom-${bottomActivity}-${row.playerName}`}>
+                  <span>{row.playerName}</span>
+                  <strong>
+                    <LocalizedNumber
+                      value={row.score}
+                      notation="compact"
+                      compactDisplay="short"
+                      maximumFractionDigits={1}
+                    />
+                  </strong>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </article>
+      </div>
 
       {showKtNote ? (
         <p className="dashboard-note">

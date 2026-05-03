@@ -50,19 +50,21 @@ const renderTrendRows = (rows: DashboardTrendPoint[]) => {
 
 export function DashboardTrendsZone({ trends }: DashboardTrendsZoneProps) {
   return (
-    <section className="panel-card panel-card--padded dashboard-stack">
+    <section className="panel-card panel-card--padded dashboard-stack dashboard-trends-zone">
       <h2 className="display-face">Зона тренды</h2>
       <p>8-week clan trend snapshot.</p>
 
-      <article className="dashboard-stack">
-        <h3>Hydra</h3>
-        {renderTrendRows(trends.hydra)}
-      </article>
+      <div className="dashboard-trends-columns">
+        <article className="dashboard-stack">
+          <h3>Hydra</h3>
+          {renderTrendRows(trends.hydra)}
+        </article>
 
-      <article className="dashboard-stack">
-        <h3>Chimera</h3>
-        {renderTrendRows(trends.chimera)}
-      </article>
+        <article className="dashboard-stack">
+          <h3>Chimera</h3>
+          {renderTrendRows(trends.chimera)}
+        </article>
+      </div>
     </section>
   );
 }
