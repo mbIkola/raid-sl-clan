@@ -17,6 +17,10 @@ import {
   selectHydraTrendSql,
   selectSiegeReadinessSql
 } from "./clan-dashboard-sql";
+import {
+  getNextChimeraResetAnchorUtc,
+  getNextHydraResetAnchorUtc
+} from "./reset-anchors";
 
 type D1QueryResult<T> = { results?: T[] };
 type D1PreparedStatement = {
@@ -115,7 +119,7 @@ export const createD1ClanDashboardRepository = (
         {
           activity: "hydra",
           title: "Hydra",
-          targetAt: hydraReadiness?.ends_at ?? null,
+          targetAt: getNextHydraResetAnchorUtc(nowIso),
           targetKind: "reset",
           statusLabel: "Сброс окна",
           primaryValue: `Ключи: ${asNumber(hydraReadiness?.keys_spent)} • Урон: ${formatCompactNumber(
@@ -126,7 +130,7 @@ export const createD1ClanDashboardRepository = (
         {
           activity: "chimera",
           title: "Chimera",
-          targetAt: chimeraReadiness?.ends_at ?? null,
+          targetAt: getNextChimeraResetAnchorUtc(nowIso),
           targetKind: "reset",
           statusLabel: "Сброс окна",
           primaryValue: `Ключи: ${asNumber(chimeraReadiness?.keys_spent)} • Урон: ${formatCompactNumber(
