@@ -147,25 +147,26 @@ export const i18nResources: Resource = {
       memberLoginLater: "Вхід для учасників відкриється пізніше"
     },
     about: {
-      title: "Що це за місце",
-      intro: "Публічне обличчя клану має читатися як намір, а не як напівпідключена панель.",
+      title: "Про проєкт",
+      intro:
+        "Це клановий дашборд для Raid Shadow Legends. Він зʼявився, бо збирати дані зі скриншотів у Telegram і зводити все в Excel — виснажливо та ненадійно. Тут зібрана базова картина по клану в одному місці.",
       openDashboard: "Відкрити дашборд",
       openGitHub: "GitHub",
       sections: {
         whatThisPlaceIs: {
-          heading: "Що це за місце",
+          heading: "Навіщо це потрібно",
           body:
-            "Публічний фронт клану: трохи архіву, трохи сигнального вогню і з часом точка входу, де новачки розуміють, куди рухатися далі."
+            "У Raid майже немає інструментів для кланової аналітики. Зазвичай усе тримається на чатах, таблицях і ручному контролі. Цей проєкт спрощує базові речі: видно активність, результати та загальну дисципліну без зайвих дій."
         },
         whatComesLater: {
-          heading: "Що буде далі",
+          heading: "Що вважається успіхом",
           body:
-            "Автентифікація, інструменти учасника й персональна статистика з’являться в наступних ітераціях. Ця сторінка лишається публічною та редакційною."
+            "Якщо учасники клану відкривають сторінку й швидко розуміють, хто виконав активності, а хто ні, значить дашборд виконує свою задачу. Проєкт розвиватиметься, але його цінність визначається тим, наскільки він корисний уже зараз."
         },
         note: {
           heading: "Стан проєкту",
           body:
-            "Проєкт розвивається поступово й може змінюватися. Частина функцій може бути спрощена або тимчасово недоступна."
+            "Проєкт розвивається поступово й може змінюватися. Деякі функції можуть бути спрощені або тимчасово відсутні. Чогось не вистачає — welcome to contribute."
         }
       }
     },
@@ -264,25 +265,26 @@ export const i18nResources: Resource = {
       memberLoginLater: "Member login opens later"
     },
     about: {
-      title: "What This Place Is",
-      intro: "The clan’s public face should read like intent, not like a half-connected control panel.",
+      title: "About the Project",
+      intro:
+        "This is a clan dashboard for Raid Shadow Legends. It exists because collecting data from Telegram screenshots and merging everything in Excel is tiring and unreliable. This page keeps a basic clan-wide picture in one place.",
       openDashboard: "Open dashboard",
       openGitHub: "GitHub",
       sections: {
         whatThisPlaceIs: {
-          heading: "What This Place Is",
+          heading: "Why This Exists",
           body:
-            "A public front for the clan: part archive, part signal fire, and eventually the place where new recruits figure out how not to get lost."
+            "Raid has almost no tools for clan-level analytics. Most clans still rely on chats, spreadsheets, and manual control. This project simplifies the basics: activity, results, and overall discipline are visible without extra busywork."
         },
         whatComesLater: {
-          heading: "What Comes Later",
+          heading: "What Success Looks Like",
           body:
-            "Authentication, member tools, and personal statistics arrive in later passes. This page stays public and editorial."
+            "If clan members open the page and quickly understand who completed activities and who did not, the dashboard is doing its job. The project will continue to evolve, but its value is defined by how useful it is right now."
         },
         note: {
           heading: "Project Status",
           body:
-            "The project is evolving in steps and can change over time. Some functions may stay simplified or temporarily unavailable."
+            "The project is evolving in stages and may change over time. Some features may stay simplified or be temporarily missing. If something is missing, welcome to contribute."
         }
       }
     },
