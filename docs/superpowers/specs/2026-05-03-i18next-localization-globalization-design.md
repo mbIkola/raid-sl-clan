@@ -40,7 +40,7 @@ Introduce complete localization for the web app with:
 
 ## 5. Architecture
 
-## 5.1 i18n Runtime
+### 5.1 i18n Runtime
 
 1. Add `i18next` + `react-i18next` in `apps/web`.
 2. Introduce a single client-side i18n bootstrap module with:
@@ -52,7 +52,7 @@ Introduce complete localization for the web app with:
    - `setLanguage(language)` action;
    - typed formatter helpers (number/date/relative-time).
 
-## 5.2 Locale And Intl Binding
+### 5.2 Locale And Intl Binding
 
 Define explicit mappings:
 
@@ -62,7 +62,7 @@ Define explicit mappings:
 
 All formatters and locale-aware components use the provider language, never ad-hoc `Intl.*.resolvedOptions().locale` for primary locale decisions.
 
-## 5.3 Translation Resource Structure
+### 5.3 Translation Resource Structure
 
 Recommended namespaces:
 
@@ -80,7 +80,7 @@ Examples:
 3. `dashboard.kt.history.empty`
 4. `menu.languageSwitcher.label`
 
-## 5.4 UI Boundary Refactor
+### 5.4 UI Boundary Refactor
 
 Move human-readable assembly from repository/server to UI:
 
@@ -91,8 +91,9 @@ Move human-readable assembly from repository/server to UI:
 ## 6. Browser Detection And Persistence
 
 1. On first client render:
-   - read `localStorage` language key;
-   - if missing/invalid, infer from browser locale;
+   - read `localStorage` language key and normalize to supported language tags;
+   - if missing/invalid, infer from browser locale (`navigator.languages`, then `navigator.language`);
+   - normalize browser values by primary subtag (`ru-RU -> ru`, `uk-UA -> uk`, `en-GB -> en`);
    - if unsupported, use `ru`.
 2. On language change:
    - call `i18n.changeLanguage(...)`;
@@ -105,21 +106,24 @@ Move human-readable assembly from repository/server to UI:
 Add switcher to menu/navigation surface:
 
 1. Shows current language.
-2. Allows selection among `RU`, `UK`, `EN`.
+2. Allows selection values `ru`, `uk`, `en` with endonym labels:
+   - `Русский`
+   - `Українська`
+   - `English`
 3. Uses provider action to switch language instantly.
 4. Uses localized labels and accessible naming via i18n keys.
 
 ## 8. Formatting Rules
 
-## 8.1 Numbers
+### 8.1 Numbers
 
 All metric values use `Intl.NumberFormat` with the selected locale.
 
-## 8.2 Dates And Times
+### 8.2 Dates And Times
 
 Use locale-aware `Intl.DateTimeFormat` with user timezone resolution (`Intl.DateTimeFormat().resolvedOptions().timeZone`) while locale comes from selected language.
 
-## 8.3 Relative/Countdown
+### 8.3 Relative/Countdown
 
 1. Replace static unit suffixes (`d/h/m/s`) with localized units/messages.
 2. Prefer `Intl.RelativeTimeFormat` where semantics match.
@@ -138,20 +142,27 @@ Use locale-aware `Intl.DateTimeFormat` with user timezone resolution (`Intl.Date
 
 Enforce localization discipline with CI-blocking ESLint rules:
 
-1. Hardcoded user-facing text in JSX text nodes is an error.
-2. Hardcoded user-facing text in attributes is an error, including:
+1. Add a repository-owned custom ESLint rule:
+   - `apps/web/eslint/rules/no-hardcoded-ui-strings.js`
+   - configured in `apps/web/eslint.config.mjs` as `localization/no-hardcoded-ui-strings: error`.
+2. Hardcoded user-facing text in JSX text nodes is an error.
+3. Hardcoded user-facing text in attributes is an error, including:
    - `aria-label`
    - `title`
    - `alt`
    - `placeholder`
    - similar user-visible strings.
-3. Allowed exceptions:
+4. Allowed exceptions are explicit and centralized in rule options:
+   - `allowedAttributeNames` (technical attrs not user-facing);
+   - `allowedLiteralPatterns` (IDs, tokens, paths, metrics keys);
+   - `allowedComponentProps` for vetted edge cases.
+5. Allowed semantic categories:
    - URLs and route paths;
    - technical IDs/tokens;
    - numeric literals;
    - data-driven values rendered from model fields;
    - explicitly documented allowlist cases.
-4. Rule severity is `error` from day one (no warning phase).
+6. Rule severity is `error` from day one (no warning phase).
 
 ## 11. Testing Strategy
 
