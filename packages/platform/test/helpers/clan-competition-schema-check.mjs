@@ -54,12 +54,12 @@ const createCompetitionWindow = (database, activityType, cadenceSlot, rotationNu
       )
       .run(
         activityType,
-        2026,
-        activityType === "hydra" ? 18 : 19,
+        2032,
+        activityType === "hydra" ? 9 : 10,
         cadenceSlot,
         rotationNumber,
-        activityType === "hydra" ? "2026-04-22T00:00:00Z" : "2026-04-23T00:00:00Z",
-        activityType === "hydra" ? "2026-04-29T00:00:00Z" : "2026-04-30T00:00:00Z",
+        activityType === "hydra" ? "2032-02-25T00:00:00Z" : "2032-03-04T00:00:00Z",
+        activityType === "hydra" ? "2032-03-03T00:00:00Z" : "2032-03-11T00:00:00Z",
         `${activityType}-window`
       ).lastInsertRowid
   );
@@ -313,6 +313,41 @@ const run = (command) => {
       }
 
       emit({ ok: true, duplicateRejected });
+      return;
+    }
+
+    case "hydra-historical-import": {
+      const windowsCount = Number(
+        database
+          .prepare("SELECT COUNT(*) AS value FROM competition_window WHERE activity_type = 'hydra'")
+          .get().value
+      );
+
+      const reportsCount = Number(database.prepare("SELECT COUNT(*) AS value FROM hydra_report").get().value);
+      const playerResultsCount = Number(
+        database.prepare("SELECT COUNT(*) AS value FROM hydra_player_result").get().value
+      );
+      const teamRunsCount = Number(database.prepare("SELECT COUNT(*) AS value FROM hydra_team_run").get().value);
+      const invalidKeysCount = Number(
+        database
+          .prepare("SELECT COUNT(*) AS value FROM hydra_player_result WHERE keys_used < 0 OR keys_used > 3")
+          .get().value
+      );
+      const nonAggregateTeamRunsCount = Number(
+        database
+          .prepare("SELECT COUNT(*) AS value FROM hydra_team_run WHERE data_completeness != 'aggregate_only'")
+          .get().value
+      );
+
+      emit({
+        ok: true,
+        windowsCount,
+        reportsCount,
+        playerResultsCount,
+        teamRunsCount,
+        invalidKeysCount,
+        nonAggregateTeamRunsCount
+      });
       return;
     }
 
