@@ -95,6 +95,7 @@ WITH recent_windows AS (
 )
 SELECT
   rw.starts_at,
+  rw.ends_at,
   rw.has_personal_rewards AS has_personal_rewards,
   COALESCE(SUM(cwps.points), 0) AS clan_total_points,
   COALESCE(COUNT(DISTINCT CASE WHEN cwps.points > 0 THEN cwps.player_profile_id END), 0) AS active_contributors,
@@ -116,7 +117,7 @@ SELECT
   ), 0) AS top_player_points
 FROM recent_windows rw
 LEFT JOIN clan_wars_player_score cwps ON cwps.clan_wars_report_id = rw.report_id
-GROUP BY rw.id, rw.starts_at, rw.has_personal_rewards, rw.report_id
+GROUP BY rw.id, rw.starts_at, rw.ends_at, rw.has_personal_rewards, rw.report_id
 ORDER BY rw.starts_at DESC, rw.id DESC;
 `;
 

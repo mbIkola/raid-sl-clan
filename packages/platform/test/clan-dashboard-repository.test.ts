@@ -228,6 +228,7 @@ describe("clan dashboard SQL", () => {
       ok: boolean;
       rows: Array<{
         starts_at: string;
+        ends_at: string;
         has_personal_rewards: number;
         clan_total_points: number;
         active_contributors: number;
@@ -239,6 +240,7 @@ describe("clan dashboard SQL", () => {
     expect(result.ok).toBe(true);
     expect(result.rows[0]).toEqual({
       starts_at: "2031-04-12T00:00:00Z",
+      ends_at: "2031-04-14T00:00:00Z",
       has_personal_rewards: 1,
       clan_total_points: 430,
       active_contributors: 3,
