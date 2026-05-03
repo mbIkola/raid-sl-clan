@@ -142,27 +142,23 @@ Use locale-aware `Intl.DateTimeFormat` with user timezone resolution (`Intl.Date
 
 Enforce localization discipline with CI-blocking ESLint rules:
 
-1. Add a repository-owned custom ESLint rule:
-   - `apps/web/eslint/rules/no-hardcoded-ui-strings.js`
-   - configured in `apps/web/eslint.config.mjs` as `localization/no-hardcoded-ui-strings: error`.
-2. Hardcoded user-facing text in JSX text nodes is an error.
-3. Hardcoded user-facing text in attributes is an error, including:
+1. Use `eslint-plugin-i18next` with `i18next/no-literal-string` as the primary enforcement rule.
+2. Configure `i18next/no-literal-string` as `error` in `apps/web/eslint.config.mjs` from day one.
+3. Hardcoded user-facing text in JSX text nodes is an error.
+4. Hardcoded user-facing text in attributes is an error, including:
    - `aria-label`
    - `title`
    - `alt`
    - `placeholder`
    - similar user-visible strings.
-4. Allowed exceptions are explicit and centralized in rule options:
-   - `allowedAttributeNames` (technical attrs not user-facing);
-   - `allowedLiteralPatterns` (IDs, tokens, paths, metrics keys);
-   - `allowedComponentProps` for vetted edge cases.
-5. Allowed semantic categories:
+5. Non-translatable terms are allowlisted via the plugin `words` option.
+6. Allowed semantic categories:
    - URLs and route paths;
    - technical IDs/tokens;
    - numeric literals;
    - data-driven values rendered from model fields;
    - explicitly documented allowlist cases.
-6. Rule severity is `error` from day one (no warning phase).
+7. Custom ESLint rule is not part of initial rollout and is introduced only if plugin limits are proven in practice.
 
 ## 11. Testing Strategy
 
