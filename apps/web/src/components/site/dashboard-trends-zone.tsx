@@ -1,6 +1,7 @@
 import React from "react";
 import type { DashboardTrendPoint } from "@raid/ports";
 import { LocalizedDateTime } from "./localized-date-time";
+import { LocalizedNumber } from "./localized-number";
 
 type DashboardTrendsZoneProps = {
   trends: {
@@ -32,7 +33,14 @@ const renderTrendRows = (rows: DashboardTrendPoint[]) => {
                 style={{ width: `${widthPercent}%` }}
               />
             </div>
-            <strong>{row.totalScore.toLocaleString("en-US")}</strong>
+            <strong>
+              <LocalizedNumber
+                value={row.totalScore}
+                notation="compact"
+                compactDisplay="short"
+                maximumFractionDigits={1}
+              />
+            </strong>
           </li>
         );
       })}

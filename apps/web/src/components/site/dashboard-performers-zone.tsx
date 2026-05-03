@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import type { DashboardActivity, DashboardTopBottom } from "@raid/ports";
+import { LocalizedNumber } from "./localized-number";
 
 const activities: DashboardActivity[] = [
   "hydra",
@@ -96,7 +97,14 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
             {rankings[topActivity].top5.map((row) => (
               <li key={`top-${topActivity}-${row.playerName}`}>
                 <span>{row.playerName}</span>
-                <strong>{row.score.toLocaleString("en-US")}</strong>
+                <strong>
+                  <LocalizedNumber
+                    value={row.score}
+                    notation="compact"
+                    compactDisplay="short"
+                    maximumFractionDigits={1}
+                  />
+                </strong>
               </li>
             ))}
           </ol>
@@ -138,7 +146,14 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
             {rankings[bottomActivity].bottom5.map((row) => (
               <li key={`bottom-${bottomActivity}-${row.playerName}`}>
                 <span>{row.playerName}</span>
-                <strong>{row.score.toLocaleString("en-US")}</strong>
+                <strong>
+                  <LocalizedNumber
+                    value={row.score}
+                    notation="compact"
+                    compactDisplay="short"
+                    maximumFractionDigits={1}
+                  />
+                </strong>
               </li>
             ))}
           </ol>
