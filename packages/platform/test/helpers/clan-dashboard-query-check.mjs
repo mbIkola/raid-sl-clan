@@ -49,6 +49,28 @@ ORDER BY score ${order}, pp.main_nickname ASC
 LIMIT ?;
 `;
 
+const selectClanWarsReadinessSql = `
+WITH latest_window AS (
+  SELECT id, starts_at, ends_at
+  FROM competition_window
+  WHERE activity_type = 'clan_wars'
+  ORDER BY starts_at DESC, id DESC
+  LIMIT 1
+), latest_report AS (
+  SELECT cwr.has_personal_rewards
+  FROM clan_wars_report cwr
+  JOIN latest_window lw ON lw.id = cwr.competition_window_id
+  ORDER BY cwr.created_at DESC, cwr.id DESC
+  LIMIT 1
+)
+SELECT
+  lw.starts_at,
+  lw.ends_at,
+  COALESCE(lr.has_personal_rewards, 0) AS has_personal_rewards
+FROM latest_window lw
+LEFT JOIN latest_report lr ON 1 = 1;
+`;
+
 const applyMigrations = () => {
   const database = new DatabaseSync(":memory:");
 
@@ -233,6 +255,60 @@ const runHydraActiveRosterFilter = (database) => {
   });
 };
 
+const runClanWarsReadinessScopedStatus = (database) => {
+  const olderWindowId = insertCompetitionWindow(database, {
+    activityType: "clan_wars",
+    seasonYear: 2031,
+    week: 10,
+    cadence: "biweekly",
+    rotationNumber: null,
+    startsAt: "2031-03-01T00:00:00Z",
+    endsAt: "2031-03-03T00:00:00Z",
+    label: "older-window"
+  });
+
+  const latestWindowId = insertCompetitionWindow(database, {
+    activityType: "clan_wars",
+    seasonYear: 2031,
+    week: 11,
+    cadence: "biweekly",
+    rotationNumber: null,
+    startsAt: "2031-03-15T00:00:00Z",
+    endsAt: "2031-03-17T00:00:00Z",
+    label: "latest-window"
+  });
+
+  const olderImportId = insertReportImport(database, "older-window");
+  const latestImportId = insertReportImport(database, "latest-window");
+
+  database
+    .prepare(
+      [
+        "INSERT INTO clan_wars_report",
+        "(competition_window_id, report_import_id, source_system, is_partial, has_personal_rewards, created_at)",
+        "VALUES (?, ?, ?, ?, ?, ?)"
+      ].join(" ")
+    )
+    .run(olderWindowId, olderImportId, "unit", 0, 1, "2031-04-01T01:00:00Z");
+
+  database
+    .prepare(
+      [
+        "INSERT INTO clan_wars_report",
+        "(competition_window_id, report_import_id, source_system, is_partial, has_personal_rewards, created_at)",
+        "VALUES (?, ?, ?, ?, ?, ?)"
+      ].join(" ")
+    )
+    .run(latestWindowId, latestImportId, "unit", 0, 0, "2031-03-20T01:00:00Z");
+
+  const row = database.prepare(selectClanWarsReadinessSql).get();
+
+  emit({
+    ok: true,
+    row
+  });
+};
+
 const database = applyMigrations();
 const command = process.argv[2];
 
@@ -242,6 +318,9 @@ switch (command) {
     break;
   case "hydra-active-roster-filter":
     runHydraActiveRosterFilter(database);
+    break;
+  case "kt-readiness-window-scoped-status":
+    runClanWarsReadinessScopedStatus(database);
     break;
   default:
     emit({ ok: false, error: `unknown-command:${command}` });

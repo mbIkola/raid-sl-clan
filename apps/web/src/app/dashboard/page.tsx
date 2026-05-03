@@ -7,6 +7,8 @@ import { DashboardReadinessZone } from "../../components/site/dashboard-readines
 import { DashboardTrendsZone } from "../../components/site/dashboard-trends-zone";
 import { getClanDashboardSnapshot } from "../../server/dashboard/get-clan-dashboard-snapshot";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const snapshot = await getClanDashboardSnapshot();
 

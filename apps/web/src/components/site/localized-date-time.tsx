@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { formatIsoForZone } from "../../lib/dashboard/date-time";
 
 type LocalizedDateTimeProps = {
@@ -14,11 +14,13 @@ export function LocalizedDateTime({
   locale,
   timeZone
 }: LocalizedDateTimeProps) {
-  const text = useMemo(() => {
+  const [text, setText] = useState("—");
+
+  useEffect(() => {
     const resolvedTimeZone =
       timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-    return formatIsoForZone(iso, resolvedTimeZone, locale);
+    setText(formatIsoForZone(iso, resolvedTimeZone, locale));
   }, [iso, locale, timeZone]);
 
   return <span>{text}</span>;

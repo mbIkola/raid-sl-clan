@@ -44,9 +44,10 @@ WITH latest_window AS (
   ORDER BY starts_at DESC, id DESC
   LIMIT 1
 ), latest_report AS (
-  SELECT has_personal_rewards
-  FROM clan_wars_report
-  ORDER BY created_at DESC, id DESC
+  SELECT cwr.has_personal_rewards
+  FROM clan_wars_report cwr
+  JOIN latest_window lw ON lw.id = cwr.competition_window_id
+  ORDER BY cwr.created_at DESC, cwr.id DESC
   LIMIT 1
 )
 SELECT

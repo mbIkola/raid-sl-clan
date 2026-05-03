@@ -98,22 +98,38 @@ export const createD1ClanDashboardRepository = (
 
   return {
     async getSnapshot({ nowIso, trendWeeks }): Promise<ClanDashboardData> {
-      const [hydraReadiness] = await queryRows<ReadinessRow>(selectHydraReadinessSql);
-      const [chimeraReadiness] = await queryRows<ReadinessRow>(selectChimeraReadinessSql);
-      const [clanWarsReadiness] = await queryRows<ReadinessRow>(selectClanWarsReadinessSql);
-      const [siegeReadiness] = await queryRows<ReadinessRow>(selectSiegeReadinessSql);
+      const [
+        hydraReadinessRows,
+        chimeraReadinessRows,
+        clanWarsReadinessRows,
+        siegeReadinessRows,
+        hydraTop,
+        hydraBottom,
+        chimeraTop,
+        chimeraBottom,
+        clanWarsTop,
+        clanWarsBottom,
+        hydraTrendRows,
+        chimeraTrendRows
+      ] = await Promise.all([
+        queryRows<ReadinessRow>(selectHydraReadinessSql),
+        queryRows<ReadinessRow>(selectChimeraReadinessSql),
+        queryRows<ReadinessRow>(selectClanWarsReadinessSql),
+        queryRows<ReadinessRow>(selectSiegeReadinessSql),
+        queryRows<RankingRow>(selectHydraRankingSql("DESC"), trendWeeks, 5),
+        queryRows<RankingRow>(selectHydraRankingSql("ASC"), trendWeeks, 5),
+        queryRows<RankingRow>(selectChimeraRankingSql("DESC"), trendWeeks, 5),
+        queryRows<RankingRow>(selectChimeraRankingSql("ASC"), trendWeeks, 5),
+        queryRows<RankingRow>(selectClanWarsRankingSql("DESC"), 5),
+        queryRows<RankingRow>(selectClanWarsRankingSql("ASC"), 5),
+        queryRows<TrendRow>(selectHydraTrendSql, trendWeeks),
+        queryRows<TrendRow>(selectChimeraTrendSql, trendWeeks)
+      ]);
 
-      const hydraTop = await queryRows<RankingRow>(selectHydraRankingSql("DESC"), trendWeeks, 5);
-      const hydraBottom = await queryRows<RankingRow>(selectHydraRankingSql("ASC"), trendWeeks, 5);
-
-      const chimeraTop = await queryRows<RankingRow>(selectChimeraRankingSql("DESC"), trendWeeks, 5);
-      const chimeraBottom = await queryRows<RankingRow>(selectChimeraRankingSql("ASC"), trendWeeks, 5);
-
-      const clanWarsTop = await queryRows<RankingRow>(selectClanWarsRankingSql("DESC"), 5);
-      const clanWarsBottom = await queryRows<RankingRow>(selectClanWarsRankingSql("ASC"), 5);
-
-      const hydraTrendRows = await queryRows<TrendRow>(selectHydraTrendSql, trendWeeks);
-      const chimeraTrendRows = await queryRows<TrendRow>(selectChimeraTrendSql, trendWeeks);
+      const [hydraReadiness] = hydraReadinessRows;
+      const [chimeraReadiness] = chimeraReadinessRows;
+      const [clanWarsReadiness] = clanWarsReadinessRows;
+      const [siegeReadiness] = siegeReadinessRows;
 
       const readiness: DashboardReadinessCard[] = [
         {

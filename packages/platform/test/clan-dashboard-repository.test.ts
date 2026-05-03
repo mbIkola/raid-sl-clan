@@ -41,4 +41,16 @@ describe("clan dashboard SQL", () => {
     expect(result.rows.some((row) => row.player_name === "InactiveWhale")).toBe(false);
     expect(result.rows.some((row) => row.player_name === "ActiveZero" && row.score === 0)).toBe(true);
   });
+
+  it("uses rewards flag from the selected latest KT window, not global latest report", () => {
+    const result = runCheck<{
+      ok: boolean;
+      row: { starts_at: string; ends_at: string; has_personal_rewards: number };
+    }>("kt-readiness-window-scoped-status");
+
+    expect(result.ok).toBe(true);
+    expect(result.row.starts_at).toBe("2031-03-15T00:00:00Z");
+    expect(result.row.ends_at).toBe("2031-03-17T00:00:00Z");
+    expect(result.row.has_personal_rewards).toBe(0);
+  });
 });
