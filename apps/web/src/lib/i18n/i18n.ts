@@ -55,6 +55,7 @@ export const initI18n = async (language = resolveBootstrapLanguage()): Promise<t
         .init({
           lng: language,
           fallbackLng: DEFAULT_LANGUAGE,
+          showSupportNotice: false,
           interpolation: { escapeValue: false },
           defaultNS: "common",
           ns: ["common", "menu", "landing", "about", "dashboard", "units"],
