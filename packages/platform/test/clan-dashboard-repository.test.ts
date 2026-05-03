@@ -53,4 +53,28 @@ describe("clan dashboard SQL", () => {
     expect(result.row.ends_at).toBe("2031-03-17T00:00:00Z");
     expect(result.row.has_personal_rewards).toBe(0);
   });
+
+  it("aggregates KT archive history for the latest windows", () => {
+    const result = runCheck<{
+      ok: boolean;
+      rows: Array<{
+        starts_at: string;
+        has_personal_rewards: number;
+        clan_total_points: number;
+        active_contributors: number;
+        top_player_name: string;
+        top_player_points: number;
+      }>;
+    }>("kt-archive-history-aggregate");
+
+    expect(result.ok).toBe(true);
+    expect(result.rows[0]).toEqual({
+      starts_at: "2031-04-12T00:00:00Z",
+      has_personal_rewards: 1,
+      clan_total_points: 430,
+      active_contributors: 3,
+      top_player_name: "Alpha",
+      top_player_points: 220
+    });
+  });
 });
