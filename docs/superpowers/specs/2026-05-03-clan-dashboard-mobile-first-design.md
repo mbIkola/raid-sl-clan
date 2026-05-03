@@ -240,3 +240,24 @@ Recommended order:
 5. Add temporary Siege(def) handling with explicit TODO for full D1 support.
 
 This order keeps the dashboard immediately useful while exposing data gaps explicitly instead of hiding them.
+
+## 14. Post-Merge Decisions (2026-05-03)
+
+The first production implementation was merged to `main` via PR #33 on 2026-05-03.
+
+Documented decisions from implementation:
+
+- `Hydra` countdown anchor is fixed to weekly reset at Wednesday `08:00 UTC`.
+- `Chimera` countdown anchor is fixed to weekly reset at Thursday `11:30 UTC`.
+- `KT` countdown anchor is fixed to a biweekly cycle starting Tuesday `10:00 UTC`, event duration `48h`.
+- KT personal rewards schedule is currently seeded from known anchor start `2026-05-05T10:00:00.000Z` (`hasPersonalRewards = true` for that start).
+
+Review-driven technical decisions merged with the implementation:
+
+- Dashboard D1 reads are executed in parallel (`Promise.all`) to avoid serialized query latency.
+- Date rendering is hydration-safe: initial placeholder render on server, localized text on client after mount.
+- Server snapshot loader is fail-fast for runtime/data-path errors (no broad fallback masking).
+
+Deferred decision (explicitly accepted for now):
+
+- ARIA semantics for performers activity chips remain temporary (`role="tablist"` with pressed buttons); revisit after live UI evaluation.
