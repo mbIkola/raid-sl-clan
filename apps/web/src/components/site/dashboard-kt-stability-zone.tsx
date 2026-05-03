@@ -17,8 +17,8 @@ export function DashboardKtStabilityZone({ rows }: DashboardKtStabilityZoneProps
         <p>Недостаточно данных</p>
       ) : (
         <ol className="dashboard-ranking-list">
-          {topRows.map((row) => (
-            <li key={row.playerName}>
+          {topRows.map((row, index) => (
+            <li key={`${row.playerName}-${index}`}>
               <span>{row.playerName}</span>
               <strong>
                 {formatNumber(row.avgPoints)} avg / {formatNumber(row.lastWindowPoints)} last

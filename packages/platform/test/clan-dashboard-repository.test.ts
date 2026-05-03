@@ -287,6 +287,14 @@ describe("clan dashboard SQL", () => {
       endsAt: "2031-04-14T00:00:00Z",
       label: "cw-4"
     });
+    const window5InProgress = insertCompetitionWindow(sqlite, {
+      activityType: "clan_wars",
+      seasonYear: 2031,
+      week: 13,
+      startsAt: "2031-05-01T00:00:00Z",
+      endsAt: "2031-05-15T00:00:00Z",
+      label: "cw-5-in-progress"
+    });
 
     const report1 = insertClanWarsReport(sqlite, {
       windowId: window1,
@@ -311,6 +319,12 @@ describe("clan dashboard SQL", () => {
       scopeKey: "cw-4",
       hasPersonalRewards: 1,
       createdAt: "2031-04-12T01:00:00Z"
+    });
+    const report5InProgress = insertClanWarsReport(sqlite, {
+      windowId: window5InProgress,
+      scopeKey: "cw-5",
+      hasPersonalRewards: 1,
+      createdAt: "2031-05-01T01:00:00Z"
     });
 
     insertClanWarsScore(sqlite, {
@@ -376,6 +390,13 @@ describe("clan dashboard SQL", () => {
       displayName: "Gamma",
       points: 20
     });
+    insertClanWarsScore(sqlite, {
+      reportId: report5InProgress,
+      competitionWindowId: window5InProgress,
+      playerId: alpha,
+      displayName: "Alpha",
+      points: 999
+    });
 
     const repository = createD1ClanDashboardRepository(d1);
     const archive = await repository.getClanWarsArchive({
@@ -396,8 +417,12 @@ describe("clan dashboard SQL", () => {
     const oldestWindow = archive.history.find(
       (row) => row.windowStart === "2031-03-01T00:00:00Z"
     );
+    const inProgressWindow = archive.history.find(
+      (row) => row.windowStart === "2031-05-01T00:00:00Z"
+    );
 
     expect(oldestWindow?.clanTotalPoints).toBe(350);
+    expect(inProgressWindow).toBeUndefined();
     expect(archive.stability.length).toBeGreaterThan(0);
     expect(archive.stability.some((row) => row.playerName === "Alpha")).toBe(true);
 

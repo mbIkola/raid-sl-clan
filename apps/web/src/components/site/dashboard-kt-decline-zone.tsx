@@ -17,8 +17,8 @@ export function DashboardKtDeclineZone({ rows }: DashboardKtDeclineZoneProps) {
         <p>Просадок не найдено</p>
       ) : (
         <ol className="dashboard-ranking-list">
-          {topRows.map((row) => (
-            <li key={row.playerName}>
+          {topRows.map((row, index) => (
+            <li key={`${row.playerName}-${index}`}>
               <span>{row.playerName}</span>
               <strong>
                 {formatNumber(row.delta)} ({formatNumber(row.recentAvg)} vs{" "}

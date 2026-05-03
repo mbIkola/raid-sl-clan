@@ -89,7 +89,7 @@ WITH recent_windows AS (
       LIMIT 1
     )
   WHERE cw.activity_type = 'clan_wars'
-    AND cw.starts_at <= ?
+    AND cw.ends_at <= ?
   ORDER BY cw.starts_at DESC, cw.id DESC
   LIMIT ?
 )

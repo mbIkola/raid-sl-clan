@@ -16,7 +16,7 @@ WITH recent_windows AS (
       LIMIT 1
     )
   WHERE cw.activity_type = 'clan_wars'
-    AND cw.starts_at <= ?
+    AND cw.ends_at <= ?
   ORDER BY cw.starts_at DESC, cw.id DESC
   LIMIT ?
 )
@@ -64,7 +64,7 @@ WITH recent_windows AS (
       LIMIT 1
     )
   WHERE cw.activity_type = 'clan_wars'
-    AND cw.starts_at <= ?
+    AND cw.ends_at <= ?
   ORDER BY cw.starts_at DESC, cw.id DESC
   LIMIT ?
 ), active_players AS (
@@ -82,5 +82,5 @@ CROSS JOIN active_players ap
 LEFT JOIN clan_wars_player_score cwps
   ON cwps.clan_wars_report_id = rw.report_id
   AND cwps.player_profile_id = ap.id
-ORDER BY rw.starts_at DESC, ap.main_nickname ASC;
+ORDER BY rw.starts_at DESC, ap.main_nickname ASC, ap.id ASC;
 `;
