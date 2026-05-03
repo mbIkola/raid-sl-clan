@@ -9,63 +9,57 @@ enum SourceType: String, Codable {
   case markdown
 }
 
-struct OCRLine: Codable {
-  let text: String
-  let confidence: Double
-  let boundingBox: [Double]
+struct ClanWarsTotals: Codable {
+  let mine: Int?
+  let opponent: Int?
 }
 
-struct TournamentWindow: Codable {
-  let sourceReportKey: String
-  let startsOn: String
-  let endsOn: String
-  let startsAtUtc: String
-  let endsAtUtc: String
+struct ClanWarsPlayerBreakdown: Codable {
+  let rank: Int
+  let playerNick: String
+  let points: Int
 }
 
-struct RewardInference: Codable {
-  let hasPersonalRewards: Bool
-  let confidence: Double
-  let decision: String
-  let evidence: [String]
-}
-
-struct OCRPageClanWars: Codable {
-  let fileName: String
-  let sourceType: SourceType
-  let window: TournamentWindow?
-  let rewardInference: RewardInference
-  let lineCount: Int
-  let lines: [OCRLine]
-}
-
-struct WindowRecommendation: Codable {
-  let sourceReportKey: String
-  let startsAtUtc: String
-  let endsAtUtc: String
-  let confidence: Double
-  let evidence: [String]
+struct ClanWarsTournamentImport: Codable {
   let sourceFile: String
+  let sourceType: SourceType
+  let sourceReportKey: String
+  let startsAt: String
+  let endsAt: String
+  let hasPersonalRewards: Int
+  let opponentClanName: String?
+  let totals: ClanWarsTotals
+  let playersOurs: [ClanWarsPlayerBreakdown]
 }
 
-struct OCRRunReport: Codable {
+struct CanonicalClanWarsImportReport: Codable {
   let generatedAt: String
   let inputDirectory: String
-  let modelName: String
-  let pages: [OCRPageClanWars]
-  let recommendedPersonalRewardsWindows: [WindowRecommendation]
+  let activity: String
+  let tournaments: [ClanWarsTournamentImport]
 }
 
 struct CLIOptions {
   let inputDirectory: String
   let outputPath: String
-  let minConfidence: Double
+}
+
+struct OCRToken {
+  let text: String
+  let x: Double
+  let y: Double
+  let confidence: Double
+}
+
+struct TournamentWindow {
+  let sourceReportKey: String
+  let startsAt: String
+  let endsAt: String
 }
 
 func parseOptions() -> CLIOptions {
   var inputDirectory = NSHomeDirectory() + "/Downloads/clanwars"
-  var outputPath = "tool/ocr-clan-results/out/clanwars-ocr-report.json"
-  var minConfidence = 0.8
+  var outputPath = "tool/ocr-clan-results/out/clanwars-canonical-import.json"
 
   var index = 1
   while index < CommandLine.arguments.count {
@@ -81,70 +75,54 @@ func parseOptions() -> CLIOptions {
       if index < CommandLine.arguments.count {
         outputPath = CommandLine.arguments[index]
       }
-    case "--min-confidence":
-      index += 1
-      if index < CommandLine.arguments.count, let value = Double(CommandLine.arguments[index]) {
-        minConfidence = value
-      }
     default:
       break
     }
     index += 1
   }
 
-  return CLIOptions(inputDirectory: inputDirectory, outputPath: outputPath, minConfidence: minConfidence)
+  return CLIOptions(inputDirectory: inputDirectory, outputPath: outputPath)
 }
 
 func normalized(_ value: String) -> String {
   let lowered = value.lowercased()
-  let mapped = lowered.replacingOccurrences(of: "ё", with: "е")
+  let mapped = lowered
+    .replacingOccurrences(of: "ё", with: "е")
+    .replacingOccurrences(of: "і", with: "и")
   let collapsed = mapped.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
   return collapsed.trimmingCharacters(in: .whitespacesAndNewlines)
 }
 
-func inferRewards(from lines: [OCRLine]) -> RewardInference {
-  let normalizedLines = lines.map { normalized($0.text) }
+func digitsOnly(_ value: String) -> String {
+  String(value.unicodeScalars.filter { CharacterSet.decimalDigits.contains($0) })
+}
 
-  let positivePatterns = [
-    "личные награды",
-    "личные",
-    "лиичные",
-    "nuyhbie",
-    "nu4hbie",
-    "личн"
-  ]
-
-  var evidence: [String] = []
-  var topConfidence = 0.0
-
-  for (idx, line) in normalizedLines.enumerated() {
-    if positivePatterns.contains(where: { line.contains($0) }) {
-      evidence.append(lines[idx].text)
-      topConfidence = max(topConfidence, lines[idx].confidence)
-    }
+func parseInt(_ value: String) -> Int? {
+  let digits = digitsOnly(value)
+  guard !digits.isEmpty else {
+    return nil
   }
+  return Int(digits)
+}
 
-  if !evidence.isEmpty {
-    return RewardInference(
-      hasPersonalRewards: true,
-      confidence: max(0.8, topConfidence),
-      decision: "confirmed_by_ocr_marker",
-      evidence: Array(evidence.prefix(5))
-    )
+func parseIntClamped(_ value: String, max: Int) -> Int? {
+  var digits = digitsOnly(value)
+  while let number = Int(digits), number > max, digits.count > 1 {
+    digits.removeLast()
   }
+  return Int(digits)
+}
 
-  return RewardInference(
-    hasPersonalRewards: false,
-    confidence: 0.6,
-    decision: "marker_not_found",
-    evidence: []
-  )
+func containsLetter(_ value: String) -> Bool {
+  value.unicodeScalars.contains { CharacterSet.letters.contains($0) }
 }
 
 func parseCaptureDate(from fileName: String) -> Date? {
-  let pattern = #"^(\d{2})\.(\d{2})\.(\d{2})"#
-  guard
-    let regex = try? NSRegularExpression(pattern: pattern),
+  let calendar = Calendar(identifier: .gregorian)
+
+  let numericPattern = #"^(\d{2})\.(\d{2})\.(\d{2})"#
+  if
+    let regex = try? NSRegularExpression(pattern: numericPattern),
     let match = regex.firstMatch(in: fileName, range: NSRange(location: 0, length: fileName.utf16.count)),
     let dayRange = Range(match.range(at: 1), in: fileName),
     let monthRange = Range(match.range(at: 2), in: fileName),
@@ -152,22 +130,56 @@ func parseCaptureDate(from fileName: String) -> Date? {
     let day = Int(fileName[dayRange]),
     let month = Int(fileName[monthRange]),
     let yearShort = Int(fileName[yearRange])
-  else {
-    return nil
+  {
+    var comps = DateComponents()
+    comps.year = 2000 + yearShort
+    comps.month = month
+    comps.day = day
+    comps.hour = 0
+    comps.minute = 0
+    comps.second = 0
+    comps.timeZone = TimeZone(secondsFromGMT: 0)
+    return calendar.date(from: comps)
   }
 
-  let year = 2000 + yearShort
-  var comps = DateComponents()
-  comps.year = year
-  comps.month = month
-  comps.day = day
-  comps.hour = 0
-  comps.minute = 0
-  comps.second = 0
-  comps.timeZone = TimeZone(secondsFromGMT: 0)
+  let englishPattern = #"^(january|february|march|april|may|june|july|august|september|october|november|december)-(\d{1,2})-clanwars-report"#
+  if
+    let regex = try? NSRegularExpression(pattern: englishPattern),
+    let match = regex.firstMatch(in: fileName.lowercased(), range: NSRange(location: 0, length: fileName.utf16.count)),
+    let monthRange = Range(match.range(at: 1), in: fileName.lowercased()),
+    let dayRange = Range(match.range(at: 2), in: fileName.lowercased()),
+    let day = Int(fileName.lowercased()[dayRange])
+  {
+    let monthMap: [String: Int] = [
+      "january": 1,
+      "february": 2,
+      "march": 3,
+      "april": 4,
+      "may": 5,
+      "june": 6,
+      "july": 7,
+      "august": 8,
+      "september": 9,
+      "october": 10,
+      "november": 11,
+      "december": 12
+    ]
+    guard let month = monthMap[String(fileName.lowercased()[monthRange])] else {
+      return nil
+    }
 
-  let calendar = Calendar(identifier: .gregorian)
-  return calendar.date(from: comps)
+    var comps = DateComponents()
+    comps.year = 2025
+    comps.month = month
+    comps.day = day
+    comps.hour = 0
+    comps.minute = 0
+    comps.second = 0
+    comps.timeZone = TimeZone(secondsFromGMT: 0)
+    return calendar.date(from: comps)
+  }
+
+  return nil
 }
 
 func parseWindow(from fileName: String) -> TournamentWindow? {
@@ -184,6 +196,7 @@ func parseWindow(from fileName: String) -> TournamentWindow? {
   anchorComps.minute = 0
   anchorComps.second = 0
   anchorComps.timeZone = TimeZone(secondsFromGMT: 0)
+
   guard let anchorStart = calendar.date(from: anchorComps) else {
     return nil
   }
@@ -211,31 +224,17 @@ func parseWindow(from fileName: String) -> TournamentWindow? {
 
   let startsOn = dayFormatter.string(from: startDate)
   let endsOn = dayFormatter.string(from: endDate)
-  let startsAtUtc = startsOn + "T00:00:00Z"
-  let endsAtUtc = endsOn + "T00:00:00Z"
-  let sourceReportKey = "clan_wars:\(startsOn)_\(endsOn)"
+  let startsAt = startsOn + "T00:00:00Z"
+  let endsAt = endsOn + "T00:00:00Z"
 
   return TournamentWindow(
-    sourceReportKey: sourceReportKey,
-    startsOn: startsOn,
-    endsOn: endsOn,
-    startsAtUtc: startsAtUtc,
-    endsAtUtc: endsAtUtc
+    sourceReportKey: "clan_wars:\(startsOn)_\(endsOn)",
+    startsAt: startsAt,
+    endsAt: endsAt
   )
 }
 
-func readMarkdownLines(_ url: URL) throws -> [OCRLine] {
-  let text = try String(contentsOf: url, encoding: .utf8)
-  return text
-    .split(separator: "\n")
-    .map { String($0) }
-    .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
-    .map {
-      OCRLine(text: $0, confidence: 1.0, boundingBox: [0.0, 0.0, 0.0, 0.0])
-    }
-}
-
-func readImageLines(_ url: URL) throws -> [OCRLine] {
+func readImageTokens(_ url: URL) throws -> [OCRToken] {
   guard let image = NSImage(contentsOf: url) else {
     throw NSError(domain: "ocr", code: 1, userInfo: [NSLocalizedDescriptionKey: "Cannot load image at \(url.path)"])
   }
@@ -255,17 +254,213 @@ func readImageLines(_ url: URL) throws -> [OCRLine] {
 
   let observations = request.results ?? []
   return observations.compactMap { observation in
-    guard let best = observation.topCandidates(1).first else {
+    guard let candidate = observation.topCandidates(1).first else {
       return nil
     }
 
     let box = observation.boundingBox
-    return OCRLine(
-      text: best.string,
-      confidence: Double(best.confidence),
-      boundingBox: [Double(box.minX), Double(box.minY), Double(box.width), Double(box.height)]
+    return OCRToken(
+      text: candidate.string,
+      x: Double(box.minX),
+      y: Double(box.minY),
+      confidence: Double(candidate.confidence)
     )
   }
+}
+
+func readMarkdownTokens(_ url: URL) throws -> [OCRToken] {
+  let text = try String(contentsOf: url, encoding: .utf8)
+  let lines = text
+    .split(separator: "\n")
+    .map { String($0) }
+    .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+
+  var y = 1.0
+  return lines.map { line in
+    defer { y -= 0.01 }
+    return OCRToken(text: line, x: 0.0, y: y, confidence: 1.0)
+  }
+}
+
+func extractHasPersonalRewards(_ tokens: [OCRToken]) -> Int {
+  let patterns = ["личные награды", "личные", "nuyhbie", "nu4hbie"]
+  for token in tokens {
+    let n = normalized(token.text)
+    if patterns.contains(where: { n.contains($0) }) {
+      return 1
+    }
+  }
+  return 0
+}
+
+func extractTotalsFromImage(_ tokens: [OCRToken]) -> ClanWarsTotals {
+  let oursCandidate = tokens
+    .filter { $0.x >= 0.16 && $0.x <= 0.35 && $0.y > 0.88 }
+    .compactMap { token -> (Double, Int)? in
+      guard let parsed = parseIntClamped(token.text, max: 20_000_000), parsed >= 1_000_000 else {
+        return nil
+      }
+      return (token.y, parsed)
+    }
+    .sorted { $0.0 > $1.0 }
+    .first?.1
+
+  let opponentCandidate = tokens
+    .filter { $0.x >= 0.84 && $0.y > 0.88 }
+    .compactMap { token -> (Double, Int)? in
+      guard let parsed = parseIntClamped(token.text, max: 20_000_000), parsed >= 1_000_000 else {
+        return nil
+      }
+      return (token.y, parsed)
+    }
+    .sorted { $0.0 > $1.0 }
+    .first?.1
+
+  return ClanWarsTotals(mine: oursCandidate, opponent: opponentCandidate)
+}
+
+func extractOpponentClanNameFromImage(_ tokens: [OCRToken]) -> String? {
+  let candidate = tokens
+    .filter { $0.x >= 0.66 && $0.x <= 0.90 && $0.y > 0.88 && containsLetter($0.text) }
+    .sorted { $0.y > $1.y }
+    .first?.text
+
+  guard var clan = candidate else {
+    return nil
+  }
+
+  clan = clan.replacingOccurrences(of: #"\[[^\]]*ур\.?[^\]]*\]"#, with: "", options: [.regularExpression, .caseInsensitive])
+  clan = clan.replacingOccurrences(of: #"\s+"#, with: " ", options: .regularExpression)
+  clan = clan.trimmingCharacters(in: .whitespacesAndNewlines)
+  return clan.isEmpty ? candidate : clan
+}
+
+func isHeaderOrNoiseName(_ text: String) -> Bool {
+  let n = normalized(text)
+  let patterns = [
+    "турнир", "ход турнира", "клановые", "личные", "награды", "задания", "участники", "рейтинг", "вильне братство", "vs"
+  ]
+  return patterns.contains(where: { n.contains($0) })
+}
+
+func extractOursBreakdownFromImage(_ tokens: [OCRToken]) -> [ClanWarsPlayerBreakdown] {
+  let vsY = tokens
+    .first(where: { normalized($0.text) == "vs" || normalized($0.text).contains(" vs") || normalized($0.text).contains("vs ") })?
+    .y ?? 0.92
+
+  let ranks = tokens
+    .filter { $0.x >= 0.55 && $0.x <= 0.63 && $0.y < vsY }
+    .compactMap { token -> (Double, Int)? in
+      guard let rank = parseInt(token.text), rank >= 1, rank <= 30 else {
+        return nil
+      }
+      return (token.y, rank)
+    }
+    .sorted { $0.0 > $1.0 }
+
+  let names = tokens
+    .filter { $0.x >= 0.31 && $0.x <= 0.56 && $0.y < vsY && $0.y < 0.90 }
+    .filter { containsLetter($0.text) && !isHeaderOrNoiseName($0.text) }
+    .sorted { $0.y > $1.y }
+
+  let points = tokens
+    .filter { $0.x >= 0.17 && $0.x <= 0.31 && $0.y < vsY && $0.y < 0.90 }
+    .compactMap { token -> (Double, Int)? in
+      guard let value = parseInt(token.text), value >= 1_000, value <= 2_500_000 else {
+        return nil
+      }
+      return (token.y, value)
+    }
+    .sorted { $0.0 > $1.0 }
+
+  let count = min(ranks.count, names.count, points.count)
+  if count == 0 {
+    return []
+  }
+
+  var rows: [ClanWarsPlayerBreakdown] = []
+  rows.reserveCapacity(count)
+
+  for index in 0..<count {
+    rows.append(
+      ClanWarsPlayerBreakdown(
+        rank: ranks[index].1,
+        playerNick: names[index].text,
+        points: points[index].1
+      )
+    )
+  }
+
+  return rows
+}
+
+func extractTotalsFromMarkdown(_ text: String) -> ClanWarsTotals {
+  var mine: Int?
+  var opponent: Int?
+
+  for line in text.split(separator: "\n").map(String.init) {
+    let n = normalized(line)
+    if n.contains("очки вильне братство") {
+      mine = parseInt(line)
+    } else if n.contains("очки ") && n.contains("matrix") {
+      opponent = parseInt(line)
+    }
+  }
+
+  return ClanWarsTotals(mine: mine, opponent: opponent)
+}
+
+func extractOpponentClanNameFromMarkdown(_ text: String) -> String? {
+  let pattern = #"\*\*[^*]+\*\*\s+и\s+\*\*([^*]+)\*\*"#
+  guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else {
+    return nil
+  }
+  guard let match = regex.firstMatch(in: text, range: NSRange(location: 0, length: text.utf16.count)) else {
+    return nil
+  }
+  guard let range = Range(match.range(at: 1), in: text) else {
+    return nil
+  }
+  return String(text[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+func extractOursBreakdownFromMarkdown(_ text: String) -> [ClanWarsPlayerBreakdown] {
+  let lines = text.split(separator: "\n").map(String.init)
+  var inOursSection = false
+  var rows: [ClanWarsPlayerBreakdown] = []
+
+  for line in lines {
+    if line.contains("### **Вільне Братство") {
+      inOursSection = true
+      continue
+    }
+
+    if inOursSection && line.contains("### **") {
+      break
+    }
+
+    guard inOursSection else {
+      continue
+    }
+
+    let pattern = #"^\|\s*(\d+)\s*\|\s*([^|]+?)\s*\|\s*([0-9,\s]+)\s*\|"#
+    guard
+      let regex = try? NSRegularExpression(pattern: pattern),
+      let match = regex.firstMatch(in: line, range: NSRange(location: 0, length: line.utf16.count)),
+      let rankRange = Range(match.range(at: 1), in: line),
+      let nameRange = Range(match.range(at: 2), in: line),
+      let pointsRange = Range(match.range(at: 3), in: line),
+      let rank = Int(line[rankRange]),
+      let points = parseInt(String(line[pointsRange]))
+    else {
+      continue
+    }
+
+    let name = String(line[nameRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+    rows.append(ClanWarsPlayerBreakdown(rank: rank, playerNick: name, points: points))
+  }
+
+  return rows
 }
 
 func sourceType(for fileName: String) -> SourceType? {
@@ -288,75 +483,71 @@ let options = parseOptions()
 let fm = FileManager.default
 let inputURL = URL(fileURLWithPath: options.inputDirectory)
 
-let allFiles = try fm.contentsOfDirectory(at: inputURL, includingPropertiesForKeys: nil)
+let files = try fm.contentsOfDirectory(at: inputURL, includingPropertiesForKeys: nil)
   .sorted { $0.lastPathComponent < $1.lastPathComponent }
 
-var pages: [OCRPageClanWars] = []
+var tournaments: [ClanWarsTournamentImport] = []
 
-for fileURL in allFiles {
+for fileURL in files {
   let fileName = fileURL.lastPathComponent
-  guard let type = sourceType(for: fileName) else {
+  guard let type = sourceType(for: fileName), let window = parseWindow(from: fileName) else {
     continue
   }
 
-  let lines: [OCRLine]
   switch type {
   case .image:
-    lines = try readImageLines(fileURL)
+    let tokens = try readImageTokens(fileURL)
+    let tournament = ClanWarsTournamentImport(
+      sourceFile: fileName,
+      sourceType: .image,
+      sourceReportKey: window.sourceReportKey,
+      startsAt: window.startsAt,
+      endsAt: window.endsAt,
+      hasPersonalRewards: extractHasPersonalRewards(tokens),
+      opponentClanName: extractOpponentClanNameFromImage(tokens),
+      totals: extractTotalsFromImage(tokens),
+      playersOurs: extractOursBreakdownFromImage(tokens)
+    )
+    tournaments.append(tournament)
+
   case .markdown:
-    lines = try readMarkdownLines(fileURL)
+    let text = try String(contentsOf: fileURL, encoding: .utf8)
+    let markdownTokens = try readMarkdownTokens(fileURL)
+    let tournament = ClanWarsTournamentImport(
+      sourceFile: fileName,
+      sourceType: .markdown,
+      sourceReportKey: window.sourceReportKey,
+      startsAt: window.startsAt,
+      endsAt: window.endsAt,
+      hasPersonalRewards: extractHasPersonalRewards(markdownTokens),
+      opponentClanName: extractOpponentClanNameFromMarkdown(text),
+      totals: extractTotalsFromMarkdown(text),
+      playersOurs: extractOursBreakdownFromMarkdown(text)
+    )
+    tournaments.append(tournament)
   }
-
-  let reward = inferRewards(from: lines)
-  let page = OCRPageClanWars(
-    fileName: fileName,
-    sourceType: type,
-    window: parseWindow(from: fileName),
-    rewardInference: reward,
-    lineCount: lines.count,
-    lines: lines
-  )
-  pages.append(page)
 }
 
-let recommendations = pages.compactMap { page -> WindowRecommendation? in
-  guard
-    let window = page.window,
-    page.rewardInference.hasPersonalRewards,
-    page.rewardInference.confidence >= options.minConfidence
-  else {
-    return nil
-  }
+let sortedTournaments = tournaments.sorted { $0.startsAt < $1.startsAt }
 
-  return WindowRecommendation(
-    sourceReportKey: window.sourceReportKey,
-    startsAtUtc: window.startsAtUtc,
-    endsAtUtc: window.endsAtUtc,
-    confidence: page.rewardInference.confidence,
-    evidence: page.rewardInference.evidence,
-    sourceFile: page.fileName
-  )
-}
-
-let report = OCRRunReport(
+let report = CanonicalClanWarsImportReport(
   generatedAt: ISO8601DateFormatter().string(from: Date()),
   inputDirectory: options.inputDirectory,
-  modelName: "vision-v1-page-ocr-clan-wars",
-  pages: pages,
-  recommendedPersonalRewardsWindows: recommendations
+  activity: "clan_wars",
+  tournaments: sortedTournaments
 )
 
 let encoder = JSONEncoder()
 encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-
 let data = try encoder.encode(report)
 try ensureParentDirectory(for: options.outputPath)
 try data.write(to: URL(fileURLWithPath: options.outputPath))
 
-print("Wrote OCR report: \(options.outputPath)")
-print("Processed pages: \(pages.count)")
-print("Recommended has_personal_rewards windows: \(recommendations.count)")
-for rec in recommendations {
-  let confidence = String(format: "%.2f", rec.confidence)
-  print("- \(rec.startsAtUtc) .. \(rec.endsAtUtc) (file: \(rec.sourceFile), confidence: \(confidence))")
+print("Wrote canonical import report: \(options.outputPath)")
+print("Tournaments parsed: \(sortedTournaments.count)")
+
+let rewards = sortedTournaments.filter { $0.hasPersonalRewards == 1 }
+print("has_personal_rewards=1 windows: \(rewards.count)")
+for window in rewards {
+  print("- \(window.startsAt) .. \(window.endsAt) [\(window.sourceFile)]")
 }

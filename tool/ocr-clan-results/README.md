@@ -1,36 +1,40 @@
 # ocr-clan-results
 
-Swift CLI for OCR parsing of clan wars report pages and inference of `has_personal_rewards`.
+Swift CLI for OCR extraction of clan wars pages into a canonical import model.
 
-## What it does
+## Canonical model (for import)
 
-- Reads image (`.jpg/.jpeg/.png`) and markdown (`.md/.txt`) resources.
-- Runs Vision OCR for images.
-- Builds canonical JSON for each page (`page ocr clan wars` model).
-- Infers `has_personal_rewards` using OCR markers (currently marker-based: `"Личные награды"` family).
-- Produces run report JSON with a ready list of windows to mark as personal rewards.
+Each tournament record contains only import-relevant fields:
 
-## Canonical model
+- `startsAt`, `endsAt`
+- `hasPersonalRewards` (`0|1`)
+- `opponentClanName`
+- `totals` (`mine` vs `opponent`)
+- `playersOurs` (`rank`, `playerNick`, `points`)
 
-Schema for one page:
-- `schema/page-ocr-clan-wars.schema.json`
+Schemas:
 
-The tool output is a run report with:
-- `pages[]` (array of canonical page models)
-- `recommendedPersonalRewardsWindows[]` (inferred windows for DB update)
+- `schema/page-ocr-clan-wars.schema.json` (single tournament import record)
+- `schema/run-report.schema.json` (full OCR run report)
 
 ## Usage
 
 ```bash
 swift tool/ocr-clan-results/ocr-clan-results.swift \
   --input /Users/$USER/Downloads/clanwars \
-  --output tool/ocr-clan-results/out/clanwars-ocr-report.json \
-  --min-confidence 0.8
+  --output tool/ocr-clan-results/out/clanwars-canonical-import.json
+```
+
+Render SQL stubs from canonical JSON:
+
+```bash
+swift tool/ocr-clan-results/render-import-sql.swift \
+  tool/ocr-clan-results/out/clanwars-canonical-import.json \
+  tool/ocr-clan-results/out/clanwars-canonical-import.sql
 ```
 
 ## Notes
 
-- Window boundaries are derived from file names like `15.01.26.jpg`:
-  - end date: `2026-01-15`
-  - start date: `end - 2 days`
-- Files that do not match `dd.MM.yy*` are still OCR-processed, but do not produce a tournament window key.
+- The tool maps screenshots to KT windows using bi-weekly calendar anchoring from `2025-03-25T00:00:00Z`.
+- Opponent player breakdown is intentionally not extracted.
+- Output is intentionally import-focused: no confidence/debug fields in canonical records.
