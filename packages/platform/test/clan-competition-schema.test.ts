@@ -70,4 +70,24 @@ describe("clan competition schema migration", () => {
     expect(result.ok).toBe(true);
     expect(result.duplicateRejected).toBe(true);
   });
+
+  it("imports historical hydra aggregate data from migration 0003", () => {
+    const result = runSchemaCheck<{
+      ok: boolean;
+      windowsCount: number;
+      reportsCount: number;
+      playerResultsCount: number;
+      teamRunsCount: number;
+      invalidKeysCount: number;
+      nonAggregateTeamRunsCount: number;
+    }>("hydra-historical-import");
+
+    expect(result.ok).toBe(true);
+    expect(result.windowsCount).toBeGreaterThanOrEqual(53);
+    expect(result.reportsCount).toBeGreaterThanOrEqual(53);
+    expect(result.playerResultsCount).toBeGreaterThanOrEqual(1400);
+    expect(result.teamRunsCount).toBeGreaterThan(0);
+    expect(result.invalidKeysCount).toBe(0);
+    expect(result.nonAggregateTeamRunsCount).toBe(0);
+  });
 });
