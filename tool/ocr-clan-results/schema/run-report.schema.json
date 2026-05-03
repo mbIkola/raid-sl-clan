@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibr-clan.org/schema/ocr-clan-wars-run-report.schema.json",
+  "title": "OCR Clan Wars Run Report",
+  "type": "object",
+  "required": [
+    "generatedAt",
+    "inputDirectory",
+    "modelName",
+    "pages",
+    "recommendedPersonalRewardsWindows"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "inputDirectory": {
+      "type": "string"
+    },
+    "modelName": {
+      "type": "string"
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "$ref": "./page-ocr-clan-wars.schema.json"
+      }
+    },
+    "recommendedPersonalRewardsWindows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sourceReportKey",
+          "startsAtUtc",
+          "endsAtUtc",
+          "confidence",
+          "evidence",
+          "sourceFile"
+        ],
+        "properties": {
+          "sourceReportKey": { "type": "string" },
+          "startsAtUtc": { "type": "string" },
+          "endsAtUtc": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "evidence": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "sourceFile": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

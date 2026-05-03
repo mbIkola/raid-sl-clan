@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vibr-clan.org/schema/page-ocr-clan-wars.schema.json",
+  "title": "Page OCR Clan Wars",
+  "type": "object",
+  "required": [
+    "fileName",
+    "sourceType",
+    "rewardInference",
+    "lineCount",
+    "lines"
+  ],
+  "properties": {
+    "fileName": {
+      "type": "string",
+      "description": "Input asset file name (image or markdown)."
+    },
+    "sourceType": {
+      "type": "string",
+      "enum": ["image", "markdown"]
+    },
+    "window": {
+      "type": ["object", "null"],
+      "required": [
+        "sourceReportKey",
+        "startsOn",
+        "endsOn",
+        "startsAtUtc",
+        "endsAtUtc"
+      ],
+      "properties": {
+        "sourceReportKey": {
+          "type": "string",
+          "pattern": "^clan_wars:[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "startsOn": {
+          "type": "string",
+          "format": "date"
+        },
+        "endsOn": {
+          "type": "string",
+          "format": "date"
+        },
+        "startsAtUtc": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z$"
+        },
+        "endsAtUtc": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T00:00:00Z$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rewardInference": {
+      "type": "object",
+      "required": ["hasPersonalRewards", "confidence", "decision", "evidence"],
+      "properties": {
+        "hasPersonalRewards": {
+          "type": "boolean"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "decision": {
+          "type": "string",
+          "enum": ["confirmed_by_ocr_marker", "marker_not_found"]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "lineCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["text", "confidence", "boundingBox"],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "boundingBox": {
+            "type": "array",
+            "description": "Vision normalized rectangle [x, y, width, height].",
+            "items": {
+              "type": "number"
+            },
+            "minItems": 4,
+            "maxItems": 4
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
