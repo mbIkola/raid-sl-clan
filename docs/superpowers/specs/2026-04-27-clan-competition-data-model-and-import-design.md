@@ -12,7 +12,7 @@ The current real-world inputs are uneven:
 
 - Hydra aggregate statistics can be pulled from the legacy Supabase-backed site.
 - Hydra and Chimera detail is currently assembled manually from game screenshots, OCR, and locally prepared JSON.
-- Clan Wars currently exposes only player-to-points totals.
+- Clan Wars currently exposes player-to-points totals plus whether the source used personal rewards mode.
 - Siege is much more complex, but current practical needs stop at match-level results.
 
 The design must avoid over-normalization, avoid EAV patterns, and still leave room for richer analytics later.
@@ -304,6 +304,7 @@ Suggested fields:
 - `report_import_id`
 - `source_system`
 - `is_partial`
+- `has_personal_rewards`
 
 ### 7.8 `clan_wars_player_score`
 
@@ -490,6 +491,7 @@ This preserves data continuity without pretending source names are stable foreve
 
 - one score row per player per Clan Wars report
 - `points` required and non-negative
+- `has_personal_rewards` required and constrained to boolean semantics (`0` or `1`)
 
 ### Siege
 
