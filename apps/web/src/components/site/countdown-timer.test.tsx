@@ -1,7 +1,9 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
 import { CountdownTimer } from "./countdown-timer";
+import { LocaleProvider } from "./locale-provider";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -20,6 +22,7 @@ describe("CountdownTimer", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -32,14 +35,17 @@ describe("CountdownTimer", () => {
 
   it("fires onTimerEnd exactly once after crossing zero", async () => {
     const onTimerEnd = vi.fn();
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
 
     await act(async () => {
       root.render(
-        <CountdownTimer
-          targetIso="2026-05-03T10:00:02.000Z"
-          endedLabel="Слияние закончено"
-          onTimerEnd={onTimerEnd}
-        />
+        <LocaleProvider>
+          <CountdownTimer
+            targetIso="2026-05-03T10:00:02.000Z"
+            endedLabel="Fusion ended"
+            onTimerEnd={onTimerEnd}
+          />
+        </LocaleProvider>
       );
     });
 
@@ -49,7 +55,7 @@ describe("CountdownTimer", () => {
       vi.advanceTimersByTime(3000);
     });
 
-    expect(container.textContent).toBe("Слияние закончено");
+    expect(container.textContent).toBe("Fusion ended");
     expect(onTimerEnd).toHaveBeenCalledTimes(1);
 
     await act(async () => {
@@ -61,13 +67,16 @@ describe("CountdownTimer", () => {
 
   it("renders neutral fallback for invalid target ISO", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
 
     await act(async () => {
       root.render(
-        <CountdownTimer
-          targetIso="invalid-iso"
-          endedLabel="Закончено, идет подсчет результатов"
-        />
+        <LocaleProvider>
+          <CountdownTimer
+            targetIso="invalid-iso"
+            endedLabel="Ended"
+          />
+        </LocaleProvider>
       );
     });
 

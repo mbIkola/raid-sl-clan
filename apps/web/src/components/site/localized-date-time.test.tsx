@@ -1,6 +1,8 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
+import { LocaleProvider } from "./locale-provider";
 import { LocalizedDateTime } from "./localized-date-time";
 
 declare global {
@@ -18,6 +20,7 @@ describe("LocalizedDateTime", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -27,20 +30,30 @@ describe("LocalizedDateTime", () => {
     container.remove();
   });
 
-  it("renders timezone-formatted date text", async () => {
+  it("renders timezone-formatted date text from provider locale", async () => {
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
+
     await act(async () => {
       root.render(
-        <LocalizedDateTime iso="2026-05-03T10:00:00.000Z" locale="en-GB" timeZone="UTC" />
+        <LocaleProvider>
+          <LocalizedDateTime iso="2026-05-03T10:00:00.000Z" />
+        </LocaleProvider>
       );
     });
 
     expect(container.textContent).toContain("03");
-    expect(container.textContent).toContain("May");
+    expect(container.textContent ?? "").toMatch(/May/i);
   });
 
   it("renders fallback for null ISO", async () => {
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
+
     await act(async () => {
-      root.render(<LocalizedDateTime iso={null} locale="en-GB" timeZone="UTC" />);
+      root.render(
+        <LocaleProvider>
+          <LocalizedDateTime iso={null} />
+        </LocaleProvider>
+      );
     });
 
     expect(container.textContent).toBe("—");

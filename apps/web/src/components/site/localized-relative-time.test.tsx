@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
 import { LocaleProvider } from "./locale-provider";
-import { LocalizedNumber } from "./localized-number";
+import { LocalizedRelativeTime } from "./localized-relative-time";
 
 declare global {
   // eslint-disable-next-line no-var
@@ -12,7 +12,7 @@ declare global {
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("LocalizedNumber", () => {
+describe("LocalizedRelativeTime", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -30,31 +30,34 @@ describe("LocalizedNumber", () => {
     container.remove();
   });
 
-  it("renders compact number format using provider locale", async () => {
+  it("renders localized relative label", async () => {
     localStorage.setItem(I18N_STORAGE_KEY, "en");
 
     await act(async () => {
       root.render(
         <LocaleProvider>
-          <LocalizedNumber value={1_200_000} notation="compact" compactDisplay="short" />
+          <LocalizedRelativeTime
+            targetIso="2099-01-01T00:00:00.000Z"
+            nowIso="2098-12-31T23:00:00.000Z"
+          />
         </LocaleProvider>
       );
     });
 
-    expect(container.textContent).toContain("M");
+    expect(container.textContent ?? "").toContain("60");
   });
 
-  it("renders locale-aware grouped number format from provider", async () => {
-    localStorage.setItem(I18N_STORAGE_KEY, "ru");
+  it("renders fallback for invalid ISO input", async () => {
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
 
     await act(async () => {
       root.render(
         <LocaleProvider>
-          <LocalizedNumber value={12_345} />
+          <LocalizedRelativeTime targetIso="invalid-iso" nowIso="2098-12-31T23:00:00.000Z" />
         </LocaleProvider>
       );
     });
 
-    expect(container.textContent ?? "").toMatch(/12[\s\u00A0\u202F]345/);
+    expect(container.textContent).toBe("—");
   });
 });

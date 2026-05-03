@@ -1,27 +1,24 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { formatIsoForZone } from "../../lib/dashboard/date-time";
+import { useLocale as readLocaleContext } from "./locale-provider";
 
 type LocalizedDateTimeProps = {
   iso: string | null;
-  locale?: string;
-  timeZone?: string;
 };
 
-export function LocalizedDateTime({
-  iso,
-  locale,
-  timeZone
-}: LocalizedDateTimeProps) {
-  const [text, setText] = useState("—");
+const useLocaleContextOrFallback = (): { locale: string; timeZone: string } => {
+  try {
+    const { locale, timeZone } = readLocaleContext();
+    return { locale, timeZone };
+  } catch {
+    return { locale: "ru-RU", timeZone: "UTC" };
+  }
+};
 
-  useEffect(() => {
-    const resolvedTimeZone =
-      timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+export function LocalizedDateTime({ iso }: LocalizedDateTimeProps) {
+  const { locale, timeZone } = useLocaleContextOrFallback();
 
-    setText(formatIsoForZone(iso, resolvedTimeZone, locale));
-  }, [iso, locale, timeZone]);
-
-  return <span>{text}</span>;
+  return <span>{formatIsoForZone(iso, timeZone, locale)}</span>;
 }

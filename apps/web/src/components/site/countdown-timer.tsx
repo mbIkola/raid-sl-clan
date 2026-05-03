@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { formatCountdown, getNextTickMs } from "../../lib/dashboard/countdown";
 
 type CountdownTimerProps = {
@@ -14,6 +15,7 @@ export function CountdownTimer({
   endedLabel,
   onTimerEnd
 }: CountdownTimerProps) {
+  const { t, i18n, ready } = useTranslation("units", { useSuspense: false });
   const [value, setValue] = useState("—");
   const endTriggeredRef = useRef(false);
 
@@ -32,6 +34,20 @@ export function CountdownTimer({
 
     let timer: ReturnType<typeof setTimeout> | null = null;
 
+    const units = ready
+      ? {
+          dayShort: t("dayShort", { defaultValue: "d" }),
+          hourShort: t("hourShort", { defaultValue: "h" }),
+          minuteShort: t("minuteShort", { defaultValue: "m" }),
+          secondShort: t("secondShort", { defaultValue: "s" })
+        }
+      : {
+          dayShort: "d",
+          hourShort: "h",
+          minuteShort: "m",
+          secondShort: "s"
+        };
+
     const tick = () => {
       const msRemaining = target.valueOf() - Date.now();
 
@@ -46,7 +62,7 @@ export function CountdownTimer({
         return;
       }
 
-      setValue(formatCountdown(msRemaining));
+      setValue(formatCountdown(msRemaining, units));
       timer = setTimeout(tick, getNextTickMs(msRemaining));
     };
 
@@ -58,7 +74,7 @@ export function CountdownTimer({
         clearTimeout(timer);
       }
     };
-  }, [targetIso, endedLabel, onTimerEnd]);
+  }, [endedLabel, i18n.resolvedLanguage, onTimerEnd, ready, t, targetIso]);
 
   return <span>{value}</span>;
 }
