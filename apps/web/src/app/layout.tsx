@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import React, { type ReactNode } from "react";
+import { LocaleProvider } from "../components/site/locale-provider";
 import { siteMetadataCopy } from "../lib/site/content";
 import { resolvePublicSiteUrl } from "../lib/site/public-site-url";
 import "./globals.css";
@@ -42,8 +43,10 @@ type RootLayoutProps = Readonly<{
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en">
-      <body className={`${displayFont.variable} site-root`}>{children}</body>
+    <html lang="ru">
+      <body className={`${displayFont.variable} site-root`}>
+        <LocaleProvider>{children}</LocaleProvider>
+      </body>
     </html>
   );
 }
