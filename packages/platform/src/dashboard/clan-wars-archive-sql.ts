@@ -14,23 +14,25 @@ SELECT
   COALESCE(COUNT(DISTINCT CASE WHEN cwps.points > 0 THEN cwps.player_profile_id END), 0) AS active_contributors,
   COALESCE((
     SELECT pp2.main_nickname
-    FROM clan_wars_player_score cwps2
+    FROM clan_wars_report cwr2
+    JOIN clan_wars_player_score cwps2 ON cwps2.clan_wars_report_id = cwr2.id
     JOIN player_profile pp2 ON pp2.id = cwps2.player_profile_id
-    WHERE cwps2.competition_window_id = rw.id
+    WHERE cwr2.competition_window_id = rw.id
     ORDER BY cwps2.points DESC, pp2.main_nickname ASC
     LIMIT 1
   ), '-') AS top_player_name,
   COALESCE((
     SELECT cwps2.points
-    FROM clan_wars_player_score cwps2
+    FROM clan_wars_report cwr2
+    JOIN clan_wars_player_score cwps2 ON cwps2.clan_wars_report_id = cwr2.id
     JOIN player_profile pp2 ON pp2.id = cwps2.player_profile_id
-    WHERE cwps2.competition_window_id = rw.id
+    WHERE cwr2.competition_window_id = rw.id
     ORDER BY cwps2.points DESC, pp2.main_nickname ASC
     LIMIT 1
   ), 0) AS top_player_points
 FROM recent_windows rw
 LEFT JOIN clan_wars_report cwr ON cwr.competition_window_id = rw.id
-LEFT JOIN clan_wars_player_score cwps ON cwps.competition_window_id = rw.id
+LEFT JOIN clan_wars_player_score cwps ON cwps.clan_wars_report_id = cwr.id
 GROUP BY rw.id, rw.starts_at, rw.ends_at, cwr.has_personal_rewards
 ORDER BY rw.starts_at DESC, rw.id DESC;
 `;
@@ -53,8 +55,9 @@ SELECT
   COALESCE(cwps.points, 0) AS points
 FROM recent_windows rw
 CROSS JOIN active_players ap
+LEFT JOIN clan_wars_report cwr ON cwr.competition_window_id = rw.id
 LEFT JOIN clan_wars_player_score cwps
-  ON cwps.competition_window_id = rw.id
+  ON cwps.clan_wars_report_id = cwr.id
   AND cwps.player_profile_id = ap.id
 ORDER BY rw.starts_at DESC, ap.main_nickname ASC;
 `;
