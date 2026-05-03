@@ -2,15 +2,21 @@ export type DashboardActivity = "hydra" | "chimera" | "clan_wars" | "siege_def";
 
 export type DashboardReadinessActivity = "hydra" | "chimera" | "clan_wars" | "siege";
 
+export type DashboardReadinessMetricKind =
+  | "keys_and_damage"
+  | "clan_wars_state"
+  | "siege_preparation";
+
 export type DashboardReadinessCard = {
   activity: DashboardReadinessActivity;
   title: string;
   targetAt: string | null;
   targetKind: "reset" | "start";
-  statusLabel: string;
-  primaryValue: string;
+  metricKind: DashboardReadinessMetricKind;
   keysSpent?: number;
   totalScore?: number;
+  clanWarsState?: "active" | "upcoming";
+  hasPersonalRewards?: boolean | null;
   href: string;
 };
 
