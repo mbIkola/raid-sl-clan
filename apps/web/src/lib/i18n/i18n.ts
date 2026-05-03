@@ -5,6 +5,7 @@ import { resolveInitialLanguage } from "./resolve-language";
 import { i18nResources } from "./resources";
 
 export const i18n = i18next.createInstance();
+let initInFlight: Promise<typeof i18n> | null = null;
 
 type BootstrapLanguageInput = {
   persistedLanguage?: string | null;
@@ -48,16 +49,25 @@ export const resolveBootstrapLanguage = (input?: BootstrapLanguageInput): Suppor
 
 export const initI18n = async (language = resolveBootstrapLanguage()): Promise<typeof i18n> => {
   if (!i18n.isInitialized) {
-    await i18n.use(initReactI18next).init({
-      lng: language,
-      fallbackLng: DEFAULT_LANGUAGE,
-      interpolation: { escapeValue: false },
-      defaultNS: "common",
-      ns: ["common", "menu", "landing", "about", "dashboard", "units"],
-      resources: i18nResources,
-      returnNull: false
-    });
-    return i18n;
+    if (!initInFlight) {
+      initInFlight = i18n
+        .use(initReactI18next)
+        .init({
+          lng: language,
+          fallbackLng: DEFAULT_LANGUAGE,
+          interpolation: { escapeValue: false },
+          defaultNS: "common",
+          ns: ["common", "menu", "landing", "about", "dashboard", "units"],
+          resources: i18nResources,
+          returnNull: false
+        })
+        .then(() => i18n)
+        .finally(() => {
+          initInFlight = null;
+        });
+    }
+
+    await initInFlight;
   }
 
   if (i18n.resolvedLanguage !== language) {
@@ -66,5 +76,3 @@ export const initI18n = async (language = resolveBootstrapLanguage()): Promise<t
 
   return i18n;
 };
-
-void initI18n();
