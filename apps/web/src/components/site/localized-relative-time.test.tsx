@@ -44,7 +44,24 @@ describe("LocalizedRelativeTime", () => {
       );
     });
 
-    expect(container.textContent ?? "").toContain("60");
+    expect(container.textContent ?? "").toMatch(/hour/i);
+  });
+
+  it("selects day unit for large differences", async () => {
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
+
+    await act(async () => {
+      root.render(
+        <LocaleProvider>
+          <LocalizedRelativeTime
+            targetIso="2099-01-03T23:00:00.000Z"
+            nowIso="2099-01-01T23:00:00.000Z"
+          />
+        </LocaleProvider>
+      );
+    });
+
+    expect(container.textContent ?? "").toMatch(/day/i);
   });
 
   it("renders fallback for invalid ISO input", async () => {

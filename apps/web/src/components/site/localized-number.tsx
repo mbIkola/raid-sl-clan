@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useSyncExternalStore } from "react";
+import { DEFAULT_LANGUAGE, LANGUAGE_TO_LOCALE } from "../../lib/i18n/languages";
 import { useOptionalLocale } from "./locale-provider";
 
 type LocalizedNumberProps = {
@@ -24,7 +25,7 @@ export function LocalizedNumber({
   minimumFractionDigits
 }: LocalizedNumberProps) {
   const localeContext = useOptionalLocale();
-  const locale = localeContext?.locale ?? "ru-RU";
+  const locale = localeContext?.locale ?? LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE];
   const hydrated = useHydrated();
 
   const options = useMemo<Intl.NumberFormatOptions>(

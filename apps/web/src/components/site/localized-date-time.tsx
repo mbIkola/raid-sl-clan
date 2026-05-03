@@ -2,6 +2,7 @@
 
 import React, { useMemo, useSyncExternalStore } from "react";
 import { formatIsoForZone } from "../../lib/dashboard/date-time";
+import { DEFAULT_LANGUAGE, LANGUAGE_TO_LOCALE } from "../../lib/i18n/languages";
 import { useOptionalLocale } from "./locale-provider";
 
 type LocalizedDateTimeProps = {
@@ -15,7 +16,7 @@ const useHydrated = (): boolean =>
 
 export function LocalizedDateTime({ iso }: LocalizedDateTimeProps) {
   const localeContext = useOptionalLocale();
-  const locale = localeContext?.locale ?? "ru-RU";
+  const locale = localeContext?.locale ?? LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE];
   const timeZone = localeContext?.timeZone ?? "UTC";
   const hydrated = useHydrated();
 
