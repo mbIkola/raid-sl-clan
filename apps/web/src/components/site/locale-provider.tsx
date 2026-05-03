@@ -41,11 +41,15 @@ type LocaleProviderProps = {
 export function LocaleProvider({ children }: LocaleProviderProps) {
   const [language, setLanguageState] = useState<SupportedLanguage>(resolveBootstrapLanguage);
   const [timeZone] = useState(resolveTimeZone);
-  const [isI18nReady, setIsI18nReady] = useState(
-    () => i18n.isInitialized || typeof window === "undefined"
-  );
+  const [isI18nReady, setIsI18nReady] = useState(() => i18n.isInitialized);
   const setLanguage = useCallback((nextLanguage: SupportedLanguage) => {
-    setLanguageState(nextLanguage);
+    setLanguageState((previousLanguage) => {
+      if (previousLanguage !== nextLanguage) {
+        setIsI18nReady(false);
+      }
+
+      return nextLanguage;
+    });
   }, []);
 
   useEffect(() => {
