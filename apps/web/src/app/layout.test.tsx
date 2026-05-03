@@ -32,11 +32,11 @@ describe("RootLayout", () => {
     });
     expect(metadata.openGraph).toMatchObject({
       title: "Raid SL Clan",
-      images: [{ url: "/meta/opengraph-image.png", alt: "Raid SL Clan" }]
+      images: [{ url: "/meta/opengraph-image.jpg", alt: "Raid SL Clan" }]
     });
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
-      images: ["/meta/twitter-image.png"]
+      images: ["/meta/twitter-image.jpg"]
     });
   });
 

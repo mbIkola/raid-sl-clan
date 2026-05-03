@@ -16,8 +16,8 @@ describe("site content", () => {
   });
 
   it("pins one intentional default background per atmospheric page", () => {
-    expect(siteArtwork.landing.default).toBe("/images/landing/poster0.jpeg");
-    expect(siteArtwork.notFound.default).toBe("/images/not-found/bg0.jpeg");
+    expect(siteArtwork.landing.default).toBe("/images/landing/poster0-opt.jpg");
+    expect(siteArtwork.notFound.default).toBe("/images/not-found/bg0-opt.jpg");
   });
 
   it("provides four first-pass public dashboard sections", () => {

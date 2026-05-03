@@ -11,10 +11,10 @@ export const landingPanelLinks = [
 
 export const siteArtwork = {
   landing: {
-    default: "/images/landing/poster0.jpeg"
+    default: "/images/landing/poster0-opt.jpg"
   },
   notFound: {
-    default: "/images/not-found/bg0.jpeg"
+    default: "/images/not-found/bg0-opt.jpg"
   }
 } as const;
 

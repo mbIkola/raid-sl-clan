@@ -26,13 +26,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: siteMetadataCopy.title,
     description: siteMetadataCopy.description,
-    images: [{ url: "/meta/opengraph-image.png", alt: "Raid SL Clan" }]
+    images: [{ url: "/meta/opengraph-image.jpg", alt: "Raid SL Clan" }]
   },
   twitter: {
     card: "summary_large_image",
     title: siteMetadataCopy.title,
     description: siteMetadataCopy.description,
-    images: ["/meta/twitter-image.png"]
+    images: ["/meta/twitter-image.jpg"]
   }
 };
 

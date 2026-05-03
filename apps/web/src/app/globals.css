@@ -172,7 +172,7 @@ img {
 .dashboard-shell--clan {
   background-image:
     linear-gradient(180deg, rgba(6, 8, 11, 0.84), rgba(6, 8, 11, 0.94)),
-    url("/images/clan-dashboard/background-mobile-mavara.png");
+    url("/images/clan-dashboard/background-mobile-mavara.jpg");
   background-size: cover;
   background-position: center;
   background-attachment: fixed;
@@ -388,7 +388,7 @@ p {
   .dashboard-shell--clan {
     background-image:
       linear-gradient(180deg, rgba(6, 8, 11, 0.74), rgba(6, 8, 11, 0.9)),
-      url("/images/clan-dashboard/background-desktop-dark-elves.png");
+      url("/images/clan-dashboard/background-desktop-dark-elves.jpg");
   }
 
   .dashboard-kt-grid {
