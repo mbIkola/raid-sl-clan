@@ -48,6 +48,12 @@ describe("KT archive metrics", () => {
     expect(buildClanWarsStabilityRows(rows, -2)).toEqual([]);
   });
 
+  it("returns empty stability rows when selected windows is not a valid positive integer", () => {
+    expect(buildClanWarsStabilityRows(rows, Number.NaN)).toEqual([]);
+    expect(buildClanWarsStabilityRows(rows, Number.POSITIVE_INFINITY)).toEqual([]);
+    expect(buildClanWarsStabilityRows(rows, 1.5)).toEqual([]);
+  });
+
   it("computes decline rows using recent-3 vs baseline with only negative deltas", () => {
     const decline = buildClanWarsDeclineRows(rows);
 

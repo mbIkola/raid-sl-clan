@@ -31,7 +31,7 @@ export const buildClanWarsStabilityRows = (
   rows: ClanWarsPlayerWindowPointsRow[],
   selectedWindows: number
 ): ClanWarsArchiveStabilityRow[] => {
-  if (selectedWindows <= 0) {
+  if (!Number.isFinite(selectedWindows) || !Number.isInteger(selectedWindows) || selectedWindows <= 0) {
     return [];
   }
 
