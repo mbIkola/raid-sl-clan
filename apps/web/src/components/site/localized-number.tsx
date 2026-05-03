@@ -1,36 +1,33 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useSyncExternalStore } from "react";
+import { DEFAULT_LANGUAGE, LANGUAGE_TO_LOCALE } from "../../lib/i18n/languages";
+import { useOptionalLocale } from "./locale-provider";
 
 type LocalizedNumberProps = {
   value: number;
-  locale?: string;
   notation?: Intl.NumberFormatOptions["notation"];
   compactDisplay?: Intl.NumberFormatOptions["compactDisplay"];
   maximumFractionDigits?: number;
   minimumFractionDigits?: number;
 };
 
-const formatNumber = (
-  value: number,
-  locale: string | undefined,
-  options: Intl.NumberFormatOptions
-) => {
-  try {
-    return new Intl.NumberFormat(locale, options).format(value);
-  } catch {
-    return String(value);
-  }
-};
+const subscribe = () => () => undefined;
+
+const useHydrated = (): boolean =>
+  useSyncExternalStore(subscribe, () => true, () => false);
 
 export function LocalizedNumber({
   value,
-  locale,
   notation,
   compactDisplay,
   maximumFractionDigits,
   minimumFractionDigits
 }: LocalizedNumberProps) {
+  const localeContext = useOptionalLocale();
+  const locale = localeContext?.locale ?? LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE];
+  const hydrated = useHydrated();
+
   const options = useMemo<Intl.NumberFormatOptions>(
     () => ({
       notation,
@@ -41,12 +38,17 @@ export function LocalizedNumber({
     [compactDisplay, maximumFractionDigits, minimumFractionDigits, notation]
   );
 
-  const [text, setText] = useState(() => formatNumber(value, "en-US", options));
+  const text = useMemo(() => {
+    if (!hydrated) {
+      return "—";
+    }
 
-  useEffect(() => {
-    const resolvedLocale = locale ?? Intl.NumberFormat().resolvedOptions().locale;
-    setText(formatNumber(value, resolvedLocale, options));
-  }, [locale, options, value]);
+    try {
+      return new Intl.NumberFormat(locale, options).format(value);
+    } catch {
+      return String(value);
+    }
+  }, [hydrated, locale, options, value]);
 
   return <span suppressHydrationWarning>{text}</span>;
 }

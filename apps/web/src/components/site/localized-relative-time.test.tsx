@@ -4,7 +4,7 @@ import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
 import { LocaleProvider } from "./locale-provider";
-import { LocalizedDateTime } from "./localized-date-time";
+import { LocalizedRelativeTime } from "./localized-relative-time";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
@@ -12,7 +12,7 @@ declare global {
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("LocalizedDateTime", () => {
+describe("LocalizedRelativeTime", () => {
   let container: HTMLDivElement;
   let root: Root;
 
@@ -30,28 +30,47 @@ describe("LocalizedDateTime", () => {
     container.remove();
   });
 
-  it("renders timezone-formatted date text from provider locale", async () => {
+  it("renders localized relative label", async () => {
     localStorage.setItem(I18N_STORAGE_KEY, "en");
 
     await act(async () => {
       root.render(
         <LocaleProvider>
-          <LocalizedDateTime iso="2026-05-03T10:00:00.000Z" />
+          <LocalizedRelativeTime
+            targetIso="2099-01-01T00:00:00.000Z"
+            nowIso="2098-12-31T23:00:00.000Z"
+          />
         </LocaleProvider>
       );
     });
 
-    expect(container.textContent).toContain("03");
-    expect(container.textContent ?? "").toMatch(/May/i);
+    expect(container.textContent ?? "").toMatch(/hour/i);
   });
 
-  it("renders fallback for null ISO", async () => {
+  it("selects day unit for large differences", async () => {
     localStorage.setItem(I18N_STORAGE_KEY, "en");
 
     await act(async () => {
       root.render(
         <LocaleProvider>
-          <LocalizedDateTime iso={null} />
+          <LocalizedRelativeTime
+            targetIso="2099-01-03T23:00:00.000Z"
+            nowIso="2099-01-01T23:00:00.000Z"
+          />
+        </LocaleProvider>
+      );
+    });
+
+    expect(container.textContent ?? "").toMatch(/day/i);
+  });
+
+  it("renders fallback for invalid ISO input", async () => {
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
+
+    await act(async () => {
+      root.render(
+        <LocaleProvider>
+          <LocalizedRelativeTime targetIso="invalid-iso" nowIso="2098-12-31T23:00:00.000Z" />
         </LocaleProvider>
       );
     });
@@ -59,8 +78,8 @@ describe("LocalizedDateTime", () => {
     expect(container.textContent).toBe("—");
   });
 
-  it("renders deterministic placeholder on server render", () => {
-    const html = renderToString(<LocalizedDateTime iso="2026-05-03T10:00:00.000Z" />);
+  it("renders deterministic placeholder on server render when nowIso is omitted", () => {
+    const html = renderToString(<LocalizedRelativeTime targetIso="2099-01-01T00:00:00.000Z" />);
     expect(html).toContain("—");
   });
 });

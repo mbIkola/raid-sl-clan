@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  aboutPageCopy,
   aboutPageSections,
   dashboardSections,
+  landingPageCopy,
   landingPanelLinks,
+  notFoundPageCopy,
   siteArtwork,
   siteMetadataCopy
 } from "./content";
@@ -10,8 +13,8 @@ import {
 describe("site content", () => {
   it("exposes the public landing links in the agreed order", () => {
     expect(landingPanelLinks).toEqual([
-      { href: "/dashboard", label: "Dashboard" },
-      { href: "/about", label: "About" }
+      { href: "/dashboard", label: "Dashboard", labelKey: "menu:dashboard" },
+      { href: "/about", label: "About", labelKey: "menu:about" }
     ]);
   });
 
@@ -34,6 +37,30 @@ describe("site content", () => {
       "What This Place Is",
       "What Comes Later"
     ]);
+  });
+
+  it("uses namespace-qualified i18n keys for content-driven strings", () => {
+    const keys = [
+      ...landingPanelLinks.map((link) => link.labelKey),
+      landingPageCopy.titleKey,
+      landingPageCopy.bodyKey,
+      landingPageCopy.panelTitleKey,
+      landingPageCopy.panelBodyKey,
+      landingPageCopy.memberLoginLaterKey,
+      landingPageCopy.navigationAriaLabelKey,
+      ...aboutPageSections.flatMap((section) => [section.headingKey, section.bodyKey]),
+      aboutPageCopy.titleKey,
+      aboutPageCopy.introKey,
+      aboutPageCopy.backToLandingKey,
+      aboutPageCopy.openDashboardKey,
+      notFoundPageCopy.messageKey,
+      notFoundPageCopy.backHomeKey
+    ];
+
+    for (const key of keys) {
+      expect(key).toContain(":");
+      expect(key).not.toMatch(/^[a-z]+\./);
+    }
   });
 
   it("keeps the root metadata copy aligned with the approved public framing", () => {

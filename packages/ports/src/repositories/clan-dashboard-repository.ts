@@ -2,17 +2,46 @@ export type DashboardActivity = "hydra" | "chimera" | "clan_wars" | "siege_def";
 
 export type DashboardReadinessActivity = "hydra" | "chimera" | "clan_wars" | "siege";
 
-export type DashboardReadinessCard = {
+export type DashboardReadinessMetricKind =
+  | "keys_and_damage"
+  | "clan_wars_state"
+  | "siege_preparation";
+
+type DashboardReadinessCardBase = {
   activity: DashboardReadinessActivity;
   title: string;
   targetAt: string | null;
   targetKind: "reset" | "start";
-  statusLabel: string;
-  primaryValue: string;
-  keysSpent?: number;
-  totalScore?: number;
   href: string;
 };
+
+export type DashboardKeysAndDamageReadinessCard = DashboardReadinessCardBase & {
+  activity: "hydra" | "chimera";
+  targetKind: "reset";
+  metricKind: "keys_and_damage";
+  keysSpent: number;
+  totalScore: number;
+  hasPersonalRewards: null;
+};
+
+export type DashboardClanWarsStateReadinessCard = DashboardReadinessCardBase & {
+  activity: "clan_wars";
+  metricKind: "clan_wars_state";
+  clanWarsState: "active" | "upcoming";
+  hasPersonalRewards: boolean;
+};
+
+export type DashboardSiegePreparationReadinessCard = DashboardReadinessCardBase & {
+  activity: "siege";
+  targetKind: "start";
+  metricKind: "siege_preparation";
+  hasPersonalRewards: null;
+};
+
+export type DashboardReadinessCard =
+  | DashboardKeysAndDamageReadinessCard
+  | DashboardClanWarsStateReadinessCard
+  | DashboardSiegePreparationReadinessCard;
 
 export type DashboardRankingRow = {
   playerName: string;

@@ -1,41 +1,51 @@
+"use client";
+
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { AtmosphericLink } from "../components/site/atmospheric-link";
 import { BrandMark } from "../components/site/brand-mark";
 import { PageBackdrop } from "../components/site/page-backdrop";
-import { landingPanelLinks, siteArtwork } from "../lib/site/content";
+import { landingPageCopy, landingPanelLinks, siteArtwork } from "../lib/site/content";
 
 export default function HomePage() {
+  const { t } = useTranslation(["landing", "menu", "common"], { useSuspense: false });
+
   return (
     <PageBackdrop imagePath={siteArtwork.landing.default}>
       <section className="landing-layout">
         <div className="landing-copy">
           <div className="landing-copy__body">
-            <BrandMark label="[VIБР] - Raid SL Clan" />
-            <h1 className="display-face">A darker front door for the clan.</h1>
+            <BrandMark label={landingPageCopy.brandLabel} />
+            <h1 className="display-face">
+              {t(landingPageCopy.titleKey)}
+            </h1>
             <p>
-              Public dashboard, editorial context, and room for future join
-              flow, without pretending the auth system already exists.
+              {t(landingPageCopy.bodyKey)}
             </p>
           </div>
         </div>
 
         <aside className="panel-card landing-panel">
-          <BrandMark label="[VIБР] - Raid SL Clan" />
+          <BrandMark label={landingPageCopy.brandLabel} />
           <div className="landing-panel__stack">
-            <h2 className="display-face">Public routes first.</h2>
+            <h2 className="display-face">
+              {t(landingPageCopy.panelTitleKey)}
+            </h2>
             <p>
-              The landing panel stays practical: dashboard, about, and a clear
-              note that member login arrives later.
+              {t(landingPageCopy.panelBodyKey)}
             </p>
           </div>
-          <nav className="landing-panel__stack" aria-label="Primary">
+          <nav
+            className="landing-panel__stack"
+            aria-label={t(landingPageCopy.navigationAriaLabelKey)}
+          >
             {landingPanelLinks.map((link) => (
               <AtmosphericLink key={link.href} href={link.href}>
-                {link.label}
+                {t(link.labelKey)}
               </AtmosphericLink>
             ))}
             <span className="atmos-link atmos-link--muted">
-              Member login opens later
+              {t(landingPageCopy.memberLoginLaterKey)}
             </span>
           </nav>
         </aside>

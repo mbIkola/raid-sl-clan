@@ -1,10 +1,15 @@
+"use client";
+
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { AtmosphericLink } from "../components/site/atmospheric-link";
 import { BrandMark } from "../components/site/brand-mark";
 import { PageBackdrop } from "../components/site/page-backdrop";
-import { siteArtwork } from "../lib/site/content";
+import { notFoundPageCopy, siteArtwork } from "../lib/site/content";
 
 export default function NotFoundPage() {
+  const { t } = useTranslation("common", { useSuspense: false });
+
   return (
     <PageBackdrop imagePath={siteArtwork.notFound.default}>
       <section className="not-found-shell">
@@ -12,10 +17,11 @@ export default function NotFoundPage() {
           <BrandMark />
           <h1 className="display-face">404</h1>
           <p>
-            The trail ends here. Return to the public front before it gets
-            embarrassing.
+            {t(notFoundPageCopy.messageKey)}
           </p>
-          <AtmosphericLink href="/">Back Home</AtmosphericLink>
+          <AtmosphericLink href="/">
+            {t(notFoundPageCopy.backHomeKey)}
+          </AtmosphericLink>
         </div>
       </section>
     </PageBackdrop>

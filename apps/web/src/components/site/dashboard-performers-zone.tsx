@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import type { DashboardActivity, DashboardTopBottom } from "@raid/ports";
+import { useTranslation } from "react-i18next";
 import { LocalizedNumber } from "./localized-number";
 
 const activities: DashboardActivity[] = [
@@ -33,10 +34,18 @@ const shiftActivity = (current: DashboardActivity, delta: -1 | 1): DashboardActi
 const swipeThresholdPx = 40;
 
 export function DashboardPerformersZone({ rankings }: DashboardPerformersZoneProps) {
+  const { t } = useTranslation("dashboard", { useSuspense: false });
   const [topActivity, setTopActivity] = useState<DashboardActivity>("hydra");
   const [bottomActivity, setBottomActivity] = useState<DashboardActivity>("hydra");
   const topTouchStartX = useRef<number | null>(null);
   const bottomTouchStartX = useRef<number | null>(null);
+
+  const localizedActivityLabels: Record<DashboardActivity, string> = {
+    hydra: t("performersActivityHydra", { defaultValue: activityLabels.hydra }),
+    chimera: t("performersActivityChimera", { defaultValue: activityLabels.chimera }),
+    clan_wars: t("performersActivityClanWars", { defaultValue: activityLabels.clan_wars }),
+    siege_def: t("performersActivitySiegeDef", { defaultValue: activityLabels.siege_def })
+  };
 
   const handleSwipe = (
     startX: number | null,
@@ -60,12 +69,16 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack dashboard-performers-zone">
-      <h2 className="display-face">Зона топ перформеров</h2>
+      <h2 className="display-face">{t("performersTitle")}</h2>
 
       <div className="dashboard-performers-columns">
         <article className="dashboard-performers-block">
-          <h3>Top 5 Performers</h3>
-          <div className="dashboard-activity-chips" role="tablist" aria-label="Top performers activity selector">
+          <h3>{t("performersTop5")}</h3>
+          <div
+            className="dashboard-activity-chips"
+            role="tablist"
+            aria-label={t("performersTopActivitySelector")}
+          >
             {activities.map((activity) => (
               <button
                 key={`top-${activity}`}
@@ -74,7 +87,7 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
                 aria-pressed={topActivity === activity}
                 onClick={() => setTopActivity(activity)}
               >
-                {activityLabels[activity]}
+                {localizedActivityLabels[activity]}
               </button>
             ))}
           </div>
@@ -113,8 +126,12 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
         </article>
 
         <article className="dashboard-performers-block">
-          <h3>Bottom 5</h3>
-          <div className="dashboard-activity-chips" role="tablist" aria-label="Bottom performers activity selector">
+          <h3>{t("performersBottom5")}</h3>
+          <div
+            className="dashboard-activity-chips"
+            role="tablist"
+            aria-label={t("performersBottomActivitySelector")}
+          >
             {activities.map((activity) => (
               <button
                 key={`bottom-${activity}`}
@@ -123,7 +140,7 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
                 aria-pressed={bottomActivity === activity}
                 onClick={() => setBottomActivity(activity)}
               >
-                {activityLabels[activity]}
+                {localizedActivityLabels[activity]}
               </button>
             ))}
           </div>
@@ -163,9 +180,7 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
       </div>
 
       {showKtNote ? (
-        <p className="dashboard-note">
-          * KT ranking is calculated as SUM(points) over the latest 4 KT reports with personal rewards.
-        </p>
+        <p className="dashboard-note">{t("performersKtNote")}</p>
       ) : null}
     </section>
   );

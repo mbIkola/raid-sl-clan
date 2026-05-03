@@ -1,27 +1,29 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useMemo, useSyncExternalStore } from "react";
 import { formatIsoForZone } from "../../lib/dashboard/date-time";
+import { DEFAULT_LANGUAGE, LANGUAGE_TO_LOCALE } from "../../lib/i18n/languages";
+import { useOptionalLocale } from "./locale-provider";
 
 type LocalizedDateTimeProps = {
   iso: string | null;
-  locale?: string;
-  timeZone?: string;
 };
 
-export function LocalizedDateTime({
-  iso,
-  locale,
-  timeZone
-}: LocalizedDateTimeProps) {
-  const [text, setText] = useState("—");
+const subscribe = () => () => undefined;
 
-  useEffect(() => {
-    const resolvedTimeZone =
-      timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone;
+const useHydrated = (): boolean =>
+  useSyncExternalStore(subscribe, () => true, () => false);
 
-    setText(formatIsoForZone(iso, resolvedTimeZone, locale));
-  }, [iso, locale, timeZone]);
+export function LocalizedDateTime({ iso }: LocalizedDateTimeProps) {
+  const localeContext = useOptionalLocale();
+  const locale = localeContext?.locale ?? LANGUAGE_TO_LOCALE[DEFAULT_LANGUAGE];
+  const timeZone = localeContext?.timeZone ?? "UTC";
+  const hydrated = useHydrated();
 
-  return <span>{text}</span>;
+  const text = useMemo(
+    () => (hydrated ? formatIsoForZone(iso, timeZone, locale) : "—"),
+    [hydrated, iso, locale, timeZone]
+  );
+
+  return <span suppressHydrationWarning>{text}</span>;
 }

@@ -82,8 +82,6 @@ const mapRankingRows = (rows: RankingRow[]): DashboardRankingRow[] =>
 
 const asNumber = (value: number | undefined) => (typeof value === "number" ? value : 0);
 
-const formatNumber = (value: number) => value.toLocaleString("en-US");
-
 const computeNextBiweeklyStart = (startIso: string | null, nowIso: string): string | null => {
   if (!startIso) {
     return null;
@@ -160,16 +158,16 @@ export const createD1ClanDashboardRepository = (
       const chimeraKeysSpent = asNumber(chimeraReadiness?.keys_spent);
       const chimeraTotalScore = asNumber(chimeraReadiness?.total_score);
 
-      const readiness: DashboardReadinessCard[] = [
+      const readiness = [
         {
           activity: "hydra",
           title: "Hydra",
           targetAt: getNextHydraResetAnchorUtc(nowIso),
           targetKind: "reset",
-          statusLabel: "Сброс окна",
-          primaryValue: `Ключи: ${hydraKeysSpent} • Урон: ${formatNumber(hydraTotalScore)}`,
+          metricKind: "keys_and_damage",
           keysSpent: hydraKeysSpent,
           totalScore: hydraTotalScore,
+          hasPersonalRewards: null,
           href: "/dashboard/hydra"
         },
         {
@@ -177,10 +175,10 @@ export const createD1ClanDashboardRepository = (
           title: "Chimera",
           targetAt: getNextChimeraResetAnchorUtc(nowIso),
           targetKind: "reset",
-          statusLabel: "Сброс окна",
-          primaryValue: `Ключи: ${chimeraKeysSpent} • Урон: ${formatNumber(chimeraTotalScore)}`,
+          metricKind: "keys_and_damage",
           keysSpent: chimeraKeysSpent,
           totalScore: chimeraTotalScore,
+          hasPersonalRewards: null,
           href: "/dashboard/chimera"
         },
         {
@@ -188,13 +186,9 @@ export const createD1ClanDashboardRepository = (
           title: "KT",
           targetAt: clanWarsAnchor.targetAt,
           targetKind: clanWarsAnchor.targetKind,
-          statusLabel: clanWarsAnchor.hasPersonalRewards
-            ? "с личными наградами"
-            : "без",
-          primaryValue:
-            clanWarsAnchor.targetKind === "reset"
-              ? "Идет клановый турнир"
-              : "Подготовка к следующему окну",
+          metricKind: "clan_wars_state",
+          clanWarsState: clanWarsAnchor.targetKind === "reset" ? "active" : "upcoming",
+          hasPersonalRewards: clanWarsAnchor.hasPersonalRewards,
           href: "/dashboard/clan-wars"
         },
         {
@@ -202,11 +196,11 @@ export const createD1ClanDashboardRepository = (
           title: "Siege",
           targetAt: computeNextBiweeklyStart(siegeReadiness?.starts_at ?? null, nowIso),
           targetKind: "start",
-          statusLabel: "Следующее окно",
-          primaryValue: "Подготовка к старту",
+          metricKind: "siege_preparation",
+          hasPersonalRewards: null,
           href: "/dashboard/siege"
         }
-      ];
+      ] satisfies DashboardReadinessCard[];
 
       return {
         readiness,

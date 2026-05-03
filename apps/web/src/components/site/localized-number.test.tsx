@@ -1,10 +1,12 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
+import { LocaleProvider } from "./locale-provider";
 import { LocalizedNumber } from "./localized-number";
 
 declare global {
-  // eslint-disable-next-line no-var
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 
@@ -18,6 +20,7 @@ describe("LocalizedNumber", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
+    localStorage.clear();
   });
 
   afterEach(() => {
@@ -27,26 +30,36 @@ describe("LocalizedNumber", () => {
     container.remove();
   });
 
-  it("renders compact number format", async () => {
+  it("renders compact number format using provider locale", async () => {
+    localStorage.setItem(I18N_STORAGE_KEY, "en");
+
     await act(async () => {
       root.render(
-        <LocalizedNumber
-          value={1_200_000}
-          locale="en-US"
-          notation="compact"
-          compactDisplay="short"
-        />
+        <LocaleProvider>
+          <LocalizedNumber value={1_200_000} notation="compact" compactDisplay="short" />
+        </LocaleProvider>
       );
     });
 
     expect(container.textContent).toContain("M");
   });
 
-  it("renders locale-aware grouped number format", async () => {
+  it("renders locale-aware grouped number format from provider", async () => {
+    localStorage.setItem(I18N_STORAGE_KEY, "ru");
+
     await act(async () => {
-      root.render(<LocalizedNumber value={12_345} locale="de-DE" />);
+      root.render(
+        <LocaleProvider>
+          <LocalizedNumber value={12_345} />
+        </LocaleProvider>
+      );
     });
 
-    expect(container.textContent).toBe("12.345");
+    expect(container.textContent ?? "").toMatch(/12[\s\u00A0\u202F]345/);
+  });
+
+  it("renders deterministic placeholder on server render", () => {
+    const html = renderToString(<LocalizedNumber value={12_345} />);
+    expect(html).toContain("—");
   });
 });

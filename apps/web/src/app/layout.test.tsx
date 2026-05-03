@@ -1,6 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { initI18n } from "../lib/i18n/i18n";
 
 vi.mock("next/font/local", () => ({
   default: () => ({
@@ -40,7 +41,8 @@ describe("RootLayout", () => {
     });
   });
 
-  it("renders the body wrapper for the page shell", () => {
+  it("renders the body wrapper for the page shell", async () => {
+    await initI18n("ru");
     const html = renderToStaticMarkup(
       <RootLayout>
         <div>child-content</div>

@@ -434,4 +434,45 @@ describe("clan dashboard SQL", () => {
       delta: -210
     });
   });
+
+  it("maps readiness snapshot using locale-neutral data primitives", async () => {
+    const { d1 } = createD1SqliteAdapter();
+    const repository = createD1ClanDashboardRepository(d1);
+
+    const snapshot = await repository.getSnapshot({
+      nowIso: "2026-05-06T00:00:00.000Z",
+      trendWeeks: 4
+    });
+
+    expect(snapshot.readiness[0]).toMatchObject({
+      activity: "hydra",
+      title: "Hydra",
+      targetKind: "reset",
+      href: "/dashboard/hydra",
+      metricKind: "keys_and_damage",
+      keysSpent: 0,
+      totalScore: 0,
+      hasPersonalRewards: null
+    });
+
+    const clanWarsCard = snapshot.readiness.find((card) => card.activity === "clan_wars");
+    expect(clanWarsCard).toMatchObject({
+      activity: "clan_wars",
+      href: "/dashboard/clan-wars",
+      metricKind: "clan_wars_state",
+      clanWarsState: "active",
+      hasPersonalRewards: true
+    });
+
+    const siegeCard = snapshot.readiness.find((card) => card.activity === "siege");
+    expect(siegeCard).toMatchObject({
+      activity: "siege",
+      href: "/dashboard/siege",
+      metricKind: "siege_preparation",
+      hasPersonalRewards: null
+    });
+
+    expect("statusLabel" in snapshot.readiness[0]).toBe(false);
+    expect("primaryValue" in snapshot.readiness[0]).toBe(false);
+  });
 });

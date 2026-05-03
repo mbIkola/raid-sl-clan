@@ -1,6 +1,8 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "../../../components/site/locale-provider";
+import { initI18n } from "../../../lib/i18n/i18n";
 
 vi.mock("../../../server/dashboard/get-clan-wars-archive-snapshot", () => ({
   getClanWarsArchiveSnapshot: vi.fn()
@@ -53,19 +55,30 @@ const createBaseSnapshot = () => ({
 
 describe("ClanWarsArchivePage", () => {
   it("renders KT archive zones and navigation", async () => {
+    await initI18n("uk");
     getClanWarsArchiveSnapshotMock.mockResolvedValue(createBaseSnapshot());
-    const html = renderToStaticMarkup(await ClanWarsArchivePage());
+    const html = renderToStaticMarkup(
+      <LocaleProvider>{await ClanWarsArchivePage()}</LocaleProvider>
+    );
+    const linkMatches = Array.from(
+      html.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([^<]+)<\/a>/g),
+      ([, href, label]) => ({ href, label })
+    );
 
-    expect(html).toContain("Клановый турнир: архив");
-    expect(html).toContain("История окон КТ");
-    expect(html).toContain("Стабильность состава");
-    expect(html).toContain("Кто проседает");
+    expect(html).toContain("Клановий турнір: архів");
+    expect(html).toContain("Історія вікон KT");
+    expect(html).toContain("Стабільність складу");
+    expect(html).toContain("Хто просідає");
     expect(html).toContain("Alpha");
     expect(html).toContain("Beta");
-    expect(html).toContain('href="/dashboard/clan-wars"');
+    expect(linkMatches).toContainEqual({ href: "/about", label: "Про проєкт" });
+    expect(linkMatches).toContainEqual({ href: "/dashboard/clan-wars", label: "KT" });
+    expect(html).toContain('aria-label="Мова інтерфейсу"');
+    expect(html).toContain('<option value="uk">Українська</option>');
   });
 
   it("renders empty-state labels when no archive rows are available", async () => {
+    await initI18n("uk");
     getClanWarsArchiveSnapshotMock.mockResolvedValue({
       ...createBaseSnapshot(),
       history: [],
@@ -73,13 +86,16 @@ describe("ClanWarsArchivePage", () => {
       decline: []
     });
 
-    const html = renderToStaticMarkup(await ClanWarsArchivePage());
+    const html = renderToStaticMarkup(
+      <LocaleProvider>{await ClanWarsArchivePage()}</LocaleProvider>
+    );
 
-    expect(html).toContain("Недостаточно данных");
-    expect(html).toContain("Просадок не найдено");
+    expect(html).toContain("Недостатньо даних");
+    expect(html).toContain("Просідань не знайдено");
   });
 
   it("limits stability and decline rendering to top 10 rows", async () => {
+    await initI18n("uk");
     getClanWarsArchiveSnapshotMock.mockResolvedValue({
       ...createBaseSnapshot(),
       stability: Array.from({ length: 11 }, (_, index) => ({
@@ -98,7 +114,9 @@ describe("ClanWarsArchivePage", () => {
       }))
     });
 
-    const html = renderToStaticMarkup(await ClanWarsArchivePage());
+    const html = renderToStaticMarkup(
+      <LocaleProvider>{await ClanWarsArchivePage()}</LocaleProvider>
+    );
 
     expect(html).toContain("Stability-10");
     expect(html).not.toContain("Stability-11");
