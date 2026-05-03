@@ -4,6 +4,15 @@ type WeeklyUtcAnchorConfig = {
   minute: number;
 };
 
+type ClanWarsTargetKind = "start" | "reset";
+type ClanWarsAnchorState = {
+  targetAt: string;
+  targetKind: ClanWarsTargetKind;
+  eventStartAt: string;
+  eventEndsAt: string;
+  hasPersonalRewards: boolean;
+};
+
 const toNextWeeklyUtcAnchor = (
   nowIso: string,
   config: WeeklyUtcAnchorConfig
@@ -48,6 +57,14 @@ const chimeraResetAnchor: WeeklyUtcAnchorConfig = {
   minute: 30
 };
 
+const clanWarsInitialStartUtc = "2026-05-05T10:00:00.000Z";
+const clanWarsIntervalMs = 14 * 24 * 60 * 60 * 1000;
+const clanWarsDurationMs = 48 * 60 * 60 * 1000;
+
+const clanWarsPersonalRewardsStarts = new Set<string>([
+  "2026-05-05T10:00:00.000Z"
+]);
+
 export const getNextHydraResetAnchorUtc = (nowIso: string) =>
   toNextWeeklyUtcAnchor(nowIso, hydraResetAnchor);
 
@@ -58,3 +75,60 @@ export const getNextWeeklyUtcAnchor = (
   nowIso: string,
   config: WeeklyUtcAnchorConfig
 ) => toNextWeeklyUtcAnchor(nowIso, config);
+
+export const getClanWarsAnchorStateUtc = (nowIso: string): ClanWarsAnchorState => {
+  const now = new Date(nowIso);
+  const initialStart = new Date(clanWarsInitialStartUtc);
+
+  if (Number.isNaN(now.valueOf())) {
+    throw new Error(`Invalid nowIso for clan wars anchor: ${nowIso}`);
+  }
+
+  if (Number.isNaN(initialStart.valueOf())) {
+    throw new Error(`Invalid clan wars initial anchor: ${clanWarsInitialStartUtc}`);
+  }
+
+  if (now.valueOf() < initialStart.valueOf()) {
+    const eventStartAt = initialStart.toISOString();
+    const eventEndsAt = new Date(initialStart.valueOf() + clanWarsDurationMs).toISOString();
+
+    return {
+      targetAt: eventStartAt,
+      targetKind: "start",
+      eventStartAt,
+      eventEndsAt,
+      hasPersonalRewards: clanWarsPersonalRewardsStarts.has(eventStartAt)
+    };
+  }
+
+  const elapsedMs = now.valueOf() - initialStart.valueOf();
+  const cyclesElapsed = Math.floor(elapsedMs / clanWarsIntervalMs);
+  const eventStart = new Date(initialStart.valueOf() + cyclesElapsed * clanWarsIntervalMs);
+  const eventEnd = new Date(eventStart.valueOf() + clanWarsDurationMs);
+
+  if (now.valueOf() < eventEnd.valueOf()) {
+    const eventStartAt = eventStart.toISOString();
+    const eventEndsAt = eventEnd.toISOString();
+
+    return {
+      targetAt: eventEndsAt,
+      targetKind: "reset",
+      eventStartAt,
+      eventEndsAt,
+      hasPersonalRewards: clanWarsPersonalRewardsStarts.has(eventStartAt)
+    };
+  }
+
+  const nextStart = new Date(eventStart.valueOf() + clanWarsIntervalMs);
+  const nextEnd = new Date(nextStart.valueOf() + clanWarsDurationMs);
+  const eventStartAt = nextStart.toISOString();
+  const eventEndsAt = nextEnd.toISOString();
+
+  return {
+    targetAt: eventStartAt,
+    targetKind: "start",
+    eventStartAt,
+    eventEndsAt,
+    hasPersonalRewards: clanWarsPersonalRewardsStarts.has(eventStartAt)
+  };
+};

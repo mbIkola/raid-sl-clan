@@ -11,13 +11,13 @@ import {
   selectChimeraReadinessSql,
   selectChimeraTrendSql,
   selectClanWarsRankingSql,
-  selectClanWarsReadinessSql,
   selectHydraRankingSql,
   selectHydraReadinessSql,
   selectHydraTrendSql,
   selectSiegeReadinessSql
 } from "./clan-dashboard-sql";
 import {
+  getClanWarsAnchorStateUtc,
   getNextChimeraResetAnchorUtc,
   getNextHydraResetAnchorUtc
 } from "./reset-anchors";
@@ -34,7 +34,6 @@ type ReadinessRow = {
   ends_at: string;
   total_score?: number;
   keys_spent?: number;
-  has_personal_rewards?: number;
 };
 
 type RankingRow = {
@@ -101,7 +100,6 @@ export const createD1ClanDashboardRepository = (
       const [
         hydraReadinessRows,
         chimeraReadinessRows,
-        clanWarsReadinessRows,
         siegeReadinessRows,
         hydraTop,
         hydraBottom,
@@ -114,7 +112,6 @@ export const createD1ClanDashboardRepository = (
       ] = await Promise.all([
         queryRows<ReadinessRow>(selectHydraReadinessSql),
         queryRows<ReadinessRow>(selectChimeraReadinessSql),
-        queryRows<ReadinessRow>(selectClanWarsReadinessSql),
         queryRows<ReadinessRow>(selectSiegeReadinessSql),
         queryRows<RankingRow>(selectHydraRankingSql("DESC"), trendWeeks, 5),
         queryRows<RankingRow>(selectHydraRankingSql("ASC"), trendWeeks, 5),
@@ -128,8 +125,8 @@ export const createD1ClanDashboardRepository = (
 
       const [hydraReadiness] = hydraReadinessRows;
       const [chimeraReadiness] = chimeraReadinessRows;
-      const [clanWarsReadiness] = clanWarsReadinessRows;
       const [siegeReadiness] = siegeReadinessRows;
+      const clanWarsAnchor = getClanWarsAnchorStateUtc(nowIso);
 
       const readiness: DashboardReadinessCard[] = [
         {
@@ -157,13 +154,15 @@ export const createD1ClanDashboardRepository = (
         {
           activity: "clan_wars",
           title: "KT",
-          targetAt: computeNextBiweeklyStart(clanWarsReadiness?.starts_at ?? null, nowIso),
-          targetKind: "start",
-          statusLabel:
-            clanWarsReadiness?.has_personal_rewards === 1
-              ? "с личными наградами"
-              : "без",
-          primaryValue: "Подготовка к следующему окну",
+          targetAt: clanWarsAnchor.targetAt,
+          targetKind: clanWarsAnchor.targetKind,
+          statusLabel: clanWarsAnchor.hasPersonalRewards
+            ? "с личными наградами"
+            : "без",
+          primaryValue:
+            clanWarsAnchor.targetKind === "reset"
+              ? "Идет клановый турнир"
+              : "Подготовка к следующему окну",
           href: "/dashboard/clan-wars"
         },
         {
