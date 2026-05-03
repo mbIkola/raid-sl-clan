@@ -1,6 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "../../../components/site/locale-provider";
 
 vi.mock("../../../server/dashboard/get-clan-wars-archive-snapshot", () => ({
   getClanWarsArchiveSnapshot: vi.fn()
@@ -54,7 +55,9 @@ const createBaseSnapshot = () => ({
 describe("ClanWarsArchivePage", () => {
   it("renders KT archive zones and navigation", async () => {
     getClanWarsArchiveSnapshotMock.mockResolvedValue(createBaseSnapshot());
-    const html = renderToStaticMarkup(await ClanWarsArchivePage());
+    const html = renderToStaticMarkup(
+      <LocaleProvider>{await ClanWarsArchivePage()}</LocaleProvider>
+    );
 
     expect(html).toContain("Клановый турнир: архив");
     expect(html).toContain("История окон КТ");
@@ -63,6 +66,7 @@ describe("ClanWarsArchivePage", () => {
     expect(html).toContain("Alpha");
     expect(html).toContain("Beta");
     expect(html).toContain('href="/dashboard/clan-wars"');
+    expect(html).toContain("<select");
   });
 
   it("renders empty-state labels when no archive rows are available", async () => {
@@ -73,7 +77,9 @@ describe("ClanWarsArchivePage", () => {
       decline: []
     });
 
-    const html = renderToStaticMarkup(await ClanWarsArchivePage());
+    const html = renderToStaticMarkup(
+      <LocaleProvider>{await ClanWarsArchivePage()}</LocaleProvider>
+    );
 
     expect(html).toContain("Недостаточно данных");
     expect(html).toContain("Просадок не найдено");
@@ -98,7 +104,9 @@ describe("ClanWarsArchivePage", () => {
       }))
     });
 
-    const html = renderToStaticMarkup(await ClanWarsArchivePage());
+    const html = renderToStaticMarkup(
+      <LocaleProvider>{await ClanWarsArchivePage()}</LocaleProvider>
+    );
 
     expect(html).toContain("Stability-10");
     expect(html).not.toContain("Stability-11");

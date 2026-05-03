@@ -2,6 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import type { DashboardActivity, DashboardTopBottom } from "@raid/ports";
+import { useTranslation } from "react-i18next";
 import { LocalizedNumber } from "./localized-number";
 
 const activities: DashboardActivity[] = [
@@ -33,10 +34,20 @@ const shiftActivity = (current: DashboardActivity, delta: -1 | 1): DashboardActi
 const swipeThresholdPx = 40;
 
 export function DashboardPerformersZone({ rankings }: DashboardPerformersZoneProps) {
+  const { t, ready } = useTranslation("dashboard", { useSuspense: false });
   const [topActivity, setTopActivity] = useState<DashboardActivity>("hydra");
   const [bottomActivity, setBottomActivity] = useState<DashboardActivity>("hydra");
   const topTouchStartX = useRef<number | null>(null);
   const bottomTouchStartX = useRef<number | null>(null);
+  const resolveText = (key: string, fallback: string): string =>
+    ready ? t(key, { defaultValue: fallback }) : fallback;
+
+  const localizedActivityLabels: Record<DashboardActivity, string> = {
+    hydra: resolveText("performersActivityHydra", activityLabels.hydra),
+    chimera: resolveText("performersActivityChimera", activityLabels.chimera),
+    clan_wars: resolveText("performersActivityClanWars", activityLabels.clan_wars),
+    siege_def: resolveText("performersActivitySiegeDef", activityLabels.siege_def)
+  };
 
   const handleSwipe = (
     startX: number | null,
@@ -60,12 +71,21 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack dashboard-performers-zone">
-      <h2 className="display-face">Зона топ перформеров</h2>
+      <h2 className="display-face">
+        {resolveText("performersTitle", "Зона топ перформеров")}
+      </h2>
 
       <div className="dashboard-performers-columns">
         <article className="dashboard-performers-block">
-          <h3>Top 5 Performers</h3>
-          <div className="dashboard-activity-chips" role="tablist" aria-label="Top performers activity selector">
+          <h3>{resolveText("performersTop5", "Top 5 Performers")}</h3>
+          <div
+            className="dashboard-activity-chips"
+            role="tablist"
+            aria-label={resolveText(
+              "performersTopActivitySelector",
+              "Top performers activity selector"
+            )}
+          >
             {activities.map((activity) => (
               <button
                 key={`top-${activity}`}
@@ -74,7 +94,7 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
                 aria-pressed={topActivity === activity}
                 onClick={() => setTopActivity(activity)}
               >
-                {activityLabels[activity]}
+                {localizedActivityLabels[activity]}
               </button>
             ))}
           </div>
@@ -113,8 +133,15 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
         </article>
 
         <article className="dashboard-performers-block">
-          <h3>Bottom 5</h3>
-          <div className="dashboard-activity-chips" role="tablist" aria-label="Bottom performers activity selector">
+          <h3>{resolveText("performersBottom5", "Bottom 5")}</h3>
+          <div
+            className="dashboard-activity-chips"
+            role="tablist"
+            aria-label={resolveText(
+              "performersBottomActivitySelector",
+              "Bottom performers activity selector"
+            )}
+          >
             {activities.map((activity) => (
               <button
                 key={`bottom-${activity}`}
@@ -123,7 +150,7 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
                 aria-pressed={bottomActivity === activity}
                 onClick={() => setBottomActivity(activity)}
               >
-                {activityLabels[activity]}
+                {localizedActivityLabels[activity]}
               </button>
             ))}
           </div>
@@ -164,7 +191,10 @@ export function DashboardPerformersZone({ rankings }: DashboardPerformersZonePro
 
       {showKtNote ? (
         <p className="dashboard-note">
-          * KT ranking is calculated as SUM(points) over the latest 4 KT reports with personal rewards.
+          {resolveText(
+            "performersKtNote",
+            "* KT ranking is calculated as SUM(points) over the latest 4 KT reports with personal rewards."
+          )}
         </p>
       ) : null}
     </section>

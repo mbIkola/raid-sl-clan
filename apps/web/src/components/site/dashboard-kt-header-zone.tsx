@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import type { ClanWarsHeader } from "@raid/ports";
+import { useTranslation } from "react-i18next";
 import { CountdownTimer } from "./countdown-timer";
 import { LocalizedDateTime } from "./localized-date-time";
 
@@ -7,27 +10,36 @@ type DashboardKtHeaderZoneProps = {
   header: ClanWarsHeader;
 };
 
-const getCountdownLabel = (targetKind: ClanWarsHeader["targetKind"]) =>
-  targetKind === "start" ? "До старта следующего окна" : "До сброса текущего окна";
-
 export function DashboardKtHeaderZone({ header }: DashboardKtHeaderZoneProps) {
+  const { t, ready } = useTranslation("dashboard", { useSuspense: false });
+  const resolveText = (key: string, fallback: string): string =>
+    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const getCountdownLabel = (targetKind: ClanWarsHeader["targetKind"]) =>
+    targetKind === "start"
+      ? resolveText("ktCountdownToStart", "До старта следующего окна")
+      : resolveText("ktCountdownToReset", "До сброса текущего окна");
   const rewardsLabel = header.hasPersonalRewards
-    ? "С личными наградами"
-    : "Без личных наград";
+    ? resolveText("ktRewardsWithPersonal", "С личными наградами")
+    : resolveText("ktRewardsWithoutPersonal", "Без личных наград");
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack">
-      <h2 className="display-face">Клановый турнир: архив</h2>
+      <h2 className="display-face">
+        {resolveText("ktArchiveTitle", "Клановый турнир: архив")}
+      </h2>
       <p>
         {getCountdownLabel(header.targetKind)}:{" "}
         <CountdownTimer
           targetIso={header.targetAt}
-          endedLabel="Окно завершено, ожидаем обновление"
+          endedLabel={resolveText("ktWindowEnded", "Окно завершено, ожидаем обновление")}
         />
       </p>
-      <p>Награды: {rewardsLabel}</p>
       <p>
-        Период окна: <LocalizedDateTime iso={header.eventStartAt} /> -{" "}
+        {resolveText("ktRewardsLabel", "Награды")}: {rewardsLabel}
+      </p>
+      <p>
+        {resolveText("ktWindowPeriodLabel", "Период окна")}:{" "}
+        <LocalizedDateTime iso={header.eventStartAt} /> -{" "}
         <LocalizedDateTime iso={header.eventEndsAt} />
       </p>
     </section>

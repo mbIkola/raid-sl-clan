@@ -1,6 +1,7 @@
 import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
+import { LocaleProvider } from "../../components/site/locale-provider";
 
 vi.mock("../../server/dashboard/get-clan-dashboard-snapshot", () => ({
   getClanDashboardSnapshot: vi.fn(async () => ({
@@ -86,15 +87,18 @@ import DashboardPage from "./page";
 
 describe("DashboardPage", () => {
   it("renders four dashboard zones and hydra as default activity", async () => {
-    const html = renderToStaticMarkup(await DashboardPage());
+    const html = renderToStaticMarkup(
+      <LocaleProvider>{await DashboardPage()}</LocaleProvider>
+    );
 
     expect(html).toContain("Зона боеготовности");
     expect(html).toContain("Зона слияния");
     expect(html).toContain("Зона топ перформеров");
-    expect(html).toContain("Зона тренды");
+    expect(html).toContain("Зона трендов");
     expect(html).toContain("Hydra");
     expect(html).toContain('aria-pressed="true">Hydra</button>');
     expect(html).toContain('<a href="/dashboard/clan-wars">KT</a>');
     expect(html).toContain("Слияния сейчас нет");
+    expect(html).toContain("<select");
   });
 });

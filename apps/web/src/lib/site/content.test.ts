@@ -10,8 +10,8 @@ import {
 describe("site content", () => {
   it("exposes the public landing links in the agreed order", () => {
     expect(landingPanelLinks).toEqual([
-      { href: "/dashboard", label: "Dashboard" },
-      { href: "/about", label: "About" }
+      { href: "/dashboard", label: "Dashboard", labelKey: "menu.dashboard" },
+      { href: "/about", label: "About", labelKey: "menu.about" }
     ]);
   });
 
