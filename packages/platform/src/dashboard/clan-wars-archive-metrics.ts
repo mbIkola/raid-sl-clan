@@ -7,6 +7,8 @@ export type ClanWarsPlayerWindowPointsRow = {
 };
 
 const round2 = (value: number) => Math.round(value * 100) / 100;
+const RECENT_WINDOWS_COUNT = 3;
+const BASELINE_MAX_WINDOWS = 6;
 
 const getSortedWindowsDesc = (rows: ClanWarsPlayerWindowPointsRow[]) =>
   Array.from(new Set(rows.map((row) => row.windowStart))).sort((a, b) =>
@@ -29,6 +31,10 @@ export const buildClanWarsStabilityRows = (
   rows: ClanWarsPlayerWindowPointsRow[],
   selectedWindows: number
 ): ClanWarsArchiveStabilityRow[] => {
+  if (selectedWindows <= 0) {
+    return [];
+  }
+
   const windows = getSortedWindowsDesc(rows).slice(0, selectedWindows);
   const grouped = groupPlayerPoints(rows);
 
@@ -69,12 +75,15 @@ export const buildClanWarsDeclineRows = (
   rows: ClanWarsPlayerWindowPointsRow[]
 ): ClanWarsArchiveDeclineRow[] => {
   const windows = getSortedWindowsDesc(rows);
-  const recentWindows = windows.slice(0, 3);
-  const precedingWindows = windows.slice(3);
-  const baselineWindows = precedingWindows.length > 6 ? precedingWindows.slice(0, 6) : precedingWindows;
+  const recentWindows = windows.slice(0, RECENT_WINDOWS_COUNT);
+  const precedingWindows = windows.slice(RECENT_WINDOWS_COUNT);
+  const baselineWindows =
+    precedingWindows.length > BASELINE_MAX_WINDOWS
+      ? precedingWindows.slice(0, BASELINE_MAX_WINDOWS)
+      : precedingWindows;
   const grouped = groupPlayerPoints(rows);
 
-  if (recentWindows.length < 3 || baselineWindows.length === 0) {
+  if (recentWindows.length < RECENT_WINDOWS_COUNT || baselineWindows.length === 0) {
     return [];
   }
 
