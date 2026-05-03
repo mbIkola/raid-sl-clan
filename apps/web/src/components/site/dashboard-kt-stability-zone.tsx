@@ -10,20 +10,14 @@ type DashboardKtStabilityZoneProps = {
 };
 
 export function DashboardKtStabilityZone({ rows }: DashboardKtStabilityZoneProps) {
-  const { t, ready } = useTranslation(["dashboard", "common", "units"], {
-    useSuspense: false
-  });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const { t } = useTranslation(["dashboard", "common", "units"], { useSuspense: false });
   const topRows = rows.slice(0, 10);
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack">
-      <h2 className="display-face">
-        {resolveText("dashboard:ktStabilityTitle", "Стабильность состава")}
-      </h2>
+      <h2 className="display-face">{t("dashboard:ktStabilityTitle")}</h2>
       {topRows.length === 0 ? (
-        <p>{resolveText("common:noData", "Недостаточно данных")}</p>
+        <p>{t("common:noData")}</p>
       ) : (
         <ol className="dashboard-ranking-list">
           {topRows.map((row, index) => (
@@ -31,9 +25,9 @@ export function DashboardKtStabilityZone({ rows }: DashboardKtStabilityZoneProps
               <span>{row.playerName}</span>
               <strong>
                 <LocalizedNumber value={row.avgPoints} />{" "}
-                {resolveText("units:avg", "avg")} /{" "}
+                {t("units:avg")} /{" "}
                 <LocalizedNumber value={row.lastWindowPoints} />{" "}
-                {resolveText("units:last", "last")}
+                {t("units:last")}
               </strong>
             </li>
           ))}

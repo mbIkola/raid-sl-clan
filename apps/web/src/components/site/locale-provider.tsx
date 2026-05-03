@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { I18nextProvider } from "react-i18next";
 import { i18n, initI18n, resolveBootstrapLanguage } from "../../lib/i18n/i18n";
 import {
@@ -39,13 +39,30 @@ type LocaleProviderProps = {
 };
 
 export function LocaleProvider({ children }: LocaleProviderProps) {
-  const [language, setLanguage] = useState<SupportedLanguage>(resolveBootstrapLanguage);
+  const [language, setLanguageState] = useState<SupportedLanguage>(resolveBootstrapLanguage);
   const [timeZone] = useState(resolveTimeZone);
+  const [isI18nReady, setIsI18nReady] = useState(
+    () => i18n.isInitialized || typeof window === "undefined"
+  );
+  const setLanguage = useCallback((nextLanguage: SupportedLanguage) => {
+    setLanguageState(nextLanguage);
+  }, []);
 
   useEffect(() => {
+    let cancelled = false;
     writePersistedLanguage(language);
     document.documentElement.lang = language;
-    void initI18n(language);
+
+    void (async () => {
+      await initI18n(language);
+      if (!cancelled) {
+        setIsI18nReady(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [language]);
 
   const value = useMemo<LocaleContextValue>(
@@ -55,12 +72,14 @@ export function LocaleProvider({ children }: LocaleProviderProps) {
       timeZone,
       setLanguage
     }),
-    [language, timeZone]
+    [language, setLanguage, timeZone]
   );
 
   return (
     <I18nextProvider i18n={i18n}>
-      <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
+      <LocaleContext.Provider value={value}>
+        {isI18nReady ? children : null}
+      </LocaleContext.Provider>
     </I18nextProvider>
   );
 }

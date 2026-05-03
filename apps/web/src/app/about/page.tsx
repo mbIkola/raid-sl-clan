@@ -12,11 +12,7 @@ import {
 } from "../../lib/site/content";
 
 export default function AboutPage() {
-  const { t, ready } = useTranslation(["about", "common"], {
-    useSuspense: false
-  });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const { t } = useTranslation(["about", "common"], { useSuspense: false });
 
   return (
     <PageBackdrop imagePath={siteArtwork.landing.default}>
@@ -24,35 +20,23 @@ export default function AboutPage() {
         <div className="editorial-shell__content">
           <BrandMark />
           <div className="editorial-stack">
-            <h1 className="display-face">
-              {resolveText(aboutPageCopy.titleKey, aboutPageCopy.title)}
-            </h1>
+            <h1 className="display-face">{t(aboutPageCopy.titleKey)}</h1>
             <p>
-              {resolveText(aboutPageCopy.introKey, aboutPageCopy.intro)}
+              {t(aboutPageCopy.introKey)}
             </p>
             {aboutPageSections.map((section) => (
               <section
                 key={section.headingKey}
                 className="panel-card panel-card--editorial editorial-stack"
               >
-                <h2 className="display-face">
-                  {resolveText(section.headingKey, section.heading)}
-                </h2>
-                <p>{resolveText(section.bodyKey, section.body)}</p>
+                <h2 className="display-face">{t(section.headingKey)}</h2>
+                <p>{t(section.bodyKey)}</p>
               </section>
             ))}
             <div className="editorial-stack">
-              <AtmosphericLink href="/">
-                {resolveText(
-                  aboutPageCopy.backToLandingKey,
-                  aboutPageCopy.backToLanding
-                )}
-              </AtmosphericLink>
+              <AtmosphericLink href="/">{t(aboutPageCopy.backToLandingKey)}</AtmosphericLink>
               <AtmosphericLink href="/dashboard">
-                {resolveText(
-                  aboutPageCopy.openDashboardKey,
-                  aboutPageCopy.openDashboard
-                )}
+                {t(aboutPageCopy.openDashboardKey)}
               </AtmosphericLink>
             </div>
           </div>

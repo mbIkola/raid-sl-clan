@@ -12,35 +12,23 @@ type DashboardReadinessZoneProps = {
 };
 
 export function DashboardReadinessZone({ cards }: DashboardReadinessZoneProps) {
-  const { t, ready } = useTranslation(["dashboard", "units"], {
-    useSuspense: false
-  });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
-
-  const endedLabel = resolveText(
-    "dashboard:readinessEnded",
-    "Окно завершено, идет подсчет результатов"
-  );
+  const { t } = useTranslation(["dashboard", "units"], { useSuspense: false });
+  const endedLabel = t("dashboard:readinessEnded");
 
   const getPrimaryValue = (card: DashboardReadinessCard): React.ReactNode => {
     if (card.metricKind === "clan_wars_state") {
       return card.clanWarsState === "active"
-        ? resolveText("dashboard:readinessClanWarsActive", "Идет клановый турнир")
-        : resolveText(
-            "dashboard:readinessClanWarsUpcoming",
-            "Подготовка к следующему окну"
-          );
+        ? t("dashboard:readinessClanWarsActive")
+        : t("dashboard:readinessClanWarsUpcoming");
     }
 
     if (card.metricKind === "siege_preparation") {
-      return resolveText("dashboard:readinessSiegePreparation", "Подготовка к старту");
+      return t("dashboard:readinessSiegePreparation");
     }
 
     return (
       <>
-        {resolveText("units:keys", "Ключи")}: <LocalizedNumber value={card.keysSpent} /> •{" "}
-        {resolveText("units:damage", "Урон")}:{" "}
+        {t("units:keys")}: <LocalizedNumber value={card.keysSpent} /> • {t("units:damage")}:{" "}
         <LocalizedNumber
           value={card.totalScore}
           notation="compact"
@@ -54,22 +42,20 @@ export function DashboardReadinessZone({ cards }: DashboardReadinessZoneProps) {
   const getStatusLabel = (card: DashboardReadinessCard): string => {
     if (card.metricKind === "clan_wars_state") {
       return card.hasPersonalRewards
-        ? resolveText("dashboard:readinessStatusWithRewards", "с личными наградами")
-        : resolveText("dashboard:readinessStatusWithoutRewards", "без личных наград");
+        ? t("dashboard:readinessStatusWithRewards")
+        : t("dashboard:readinessStatusWithoutRewards");
     }
 
     if (card.metricKind === "siege_preparation") {
-      return resolveText("dashboard:readinessStatusNextWindow", "Следующее окно");
+      return t("dashboard:readinessStatusNextWindow");
     }
 
-    return resolveText("dashboard:readinessStatusWindowReset", "Сброс окна");
+    return t("dashboard:readinessStatusWindowReset");
   };
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack">
-      <h2 className="display-face">
-        {resolveText("dashboard:readinessTitle", "Зона боеготовности")}
-      </h2>
+      <h2 className="display-face">{t("dashboard:readinessTitle")}</h2>
       <div className="dashboard-readiness-grid">
         {cards.map((card) => (
           <Link key={card.activity} href={card.href} className="dashboard-readiness-card">

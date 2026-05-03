@@ -14,17 +14,13 @@ type DashboardTrendsZoneProps = {
 };
 
 export function DashboardTrendsZone({ trends }: DashboardTrendsZoneProps) {
-  const { t, ready } = useTranslation(["dashboard", "common"], {
-    useSuspense: false
-  });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const { t } = useTranslation(["dashboard", "common"], { useSuspense: false });
 
   const renderTrendRows = (rows: DashboardTrendPoint[]) => {
     const max = rows.reduce((acc, row) => Math.max(acc, row.totalScore), 0);
 
     if (rows.length === 0) {
-      return <p>{resolveText("common:noData", "Недостаточно данных")}</p>;
+      return <p>{t("common:noData")}</p>;
     }
 
     return (
@@ -60,19 +56,17 @@ export function DashboardTrendsZone({ trends }: DashboardTrendsZoneProps) {
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack dashboard-trends-zone">
-      <h2 className="display-face">
-        {resolveText("dashboard:trendsTitle", "Зона трендов")}
-      </h2>
-      <p>{resolveText("dashboard:trendsSubtitle", "8-week clan trend snapshot.")}</p>
+      <h2 className="display-face">{t("dashboard:trendsTitle")}</h2>
+      <p>{t("dashboard:trendsSubtitle")}</p>
 
       <div className="dashboard-trends-columns">
         <article className="dashboard-stack">
-          <h3>{resolveText("dashboard:trendsHydra", "Hydra")}</h3>
+          <h3>{t("dashboard:trendsHydra")}</h3>
           {renderTrendRows(trends.hydra)}
         </article>
 
         <article className="dashboard-stack">
-          <h3>{resolveText("dashboard:trendsChimera", "Chimera")}</h3>
+          <h3>{t("dashboard:trendsChimera")}</h3>
           {renderTrendRows(trends.chimera)}
         </article>
       </div>

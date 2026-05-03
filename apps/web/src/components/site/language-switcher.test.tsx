@@ -5,12 +5,10 @@ import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
 import { LanguageSwitcher } from "./language-switcher";
 import { LocaleProvider } from "./locale-provider";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
-}
-
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+const reactActEnvironment = globalThis as typeof globalThis & {
+  IS_REACT_ACT_ENVIRONMENT?: boolean;
+};
+reactActEnvironment.IS_REACT_ACT_ENVIRONMENT = true;
 
 describe("LanguageSwitcher", () => {
   let container: HTMLDivElement;

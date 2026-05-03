@@ -7,29 +7,18 @@ import { LanguageSwitcher } from "./language-switcher";
 import { useOptionalLocale } from "./locale-provider";
 
 export function DashboardNav() {
-  const { t, ready } = useTranslation(["common", "menu"], {
-    useSuspense: false
-  });
+  const { t } = useTranslation(["common", "menu"], { useSuspense: false });
   const localeContext = useOptionalLocale();
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
 
   return (
     <details className="dashboard-nav">
-      <summary>{resolveText("common:menu", "Menu")}</summary>
+      <summary>{t("common:menu")}</summary>
       <div className="dashboard-nav__links">
-        <nav
-          className="dashboard-stack"
-          aria-label={resolveText("menu:navigationLabel", "Dashboard navigation")}
-        >
-          <Link href="/">{resolveText("menu:landing", "Landing")}</Link>
-          <Link href="/about">{resolveText("menu:about", "About")}</Link>
-          <Link href="/dashboard">
-            {resolveText("menu:dashboard", "Dashboard")}
-          </Link>
-          <Link href="/dashboard/clan-wars">
-            {resolveText("menu:clanWars", "KT")}
-          </Link>
+        <nav className="dashboard-stack" aria-label={t("menu:navigationLabel")}>
+          <Link href="/">{t("menu:landing")}</Link>
+          <Link href="/about">{t("menu:about")}</Link>
+          <Link href="/dashboard">{t("menu:dashboard")}</Link>
+          <Link href="/dashboard/clan-wars">{t("menu:clanWars")}</Link>
         </nav>
         {localeContext ? <LanguageSwitcher /> : null}
       </div>

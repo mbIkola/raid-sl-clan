@@ -8,9 +8,7 @@ import { PageBackdrop } from "../components/site/page-backdrop";
 import { notFoundPageCopy, siteArtwork } from "../lib/site/content";
 
 export default function NotFoundPage() {
-  const { t, ready } = useTranslation("common", { useSuspense: false });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const { t } = useTranslation("common", { useSuspense: false });
 
   return (
     <PageBackdrop imagePath={siteArtwork.notFound.default}>
@@ -19,10 +17,10 @@ export default function NotFoundPage() {
           <BrandMark />
           <h1 className="display-face">404</h1>
           <p>
-            {resolveText(notFoundPageCopy.messageKey, notFoundPageCopy.message)}
+            {t(notFoundPageCopy.messageKey)}
           </p>
           <AtmosphericLink href="/">
-            {resolveText(notFoundPageCopy.backHomeKey, notFoundPageCopy.backHome)}
+            {t(notFoundPageCopy.backHomeKey)}
           </AtmosphericLink>
         </div>
       </section>

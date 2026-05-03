@@ -11,31 +11,26 @@ type DashboardFusionZoneProps = {
 };
 
 export function DashboardFusionZone({ fusion }: DashboardFusionZoneProps) {
-  const { t, ready } = useTranslation(["dashboard"], { useSuspense: false });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const { t } = useTranslation(["dashboard"], { useSuspense: false });
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack">
-      <h2 className="display-face">
-        {resolveText("dashboard:fusionTitle", "Зона слияния")}
-      </h2>
+      <h2 className="display-face">{t("dashboard:fusionTitle")}</h2>
 
       {fusion.status === "active" ? (
         <div className="dashboard-fusion-active">
           <h3 className="display-face">
-            {fusion.title ??
-              resolveText("dashboard:fusionDefaultTitle", "Слияние")}
+            {fusion.title ?? t("dashboard:fusionDefaultTitle")}
           </h3>
           <p>
-            {resolveText("dashboard:fusionPeriodLabel", "Период")}:{" "}
+            {t("dashboard:fusionPeriodLabel")}:{" "}
             <LocalizedDateTime iso={fusion.startsAt} /> -{" "}
             <LocalizedDateTime iso={fusion.endsAt} />
           </p>
           <p>
             <CountdownTimer
               targetIso={fusion.endsAt}
-              endedLabel={resolveText("dashboard:fusionEnded", "Слияние закончено")}
+              endedLabel={t("dashboard:fusionEnded")}
             />
           </p>
 
@@ -43,8 +38,7 @@ export function DashboardFusionZone({ fusion }: DashboardFusionZoneProps) {
             <img
               src={fusion.heroPortraitImageUrl}
               alt={
-                fusion.title ??
-                resolveText("dashboard:fusionHeroAlt", "Fusion hero")
+                fusion.title ?? t("dashboard:fusionHeroAlt")
               }
               className="dashboard-fusion-portrait"
             />
@@ -52,14 +46,14 @@ export function DashboardFusionZone({ fusion }: DashboardFusionZoneProps) {
 
           {fusion.calendarImageUrl ? (
             <a href={fusion.calendarImageUrl} target="_blank" rel="noreferrer" className="atmos-link">
-              {resolveText("dashboard:fusionOpenCalendar", "Open calendar")}
+              {t("dashboard:fusionOpenCalendar")}
             </a>
           ) : null}
 
           {fusion.note ? <p>{fusion.note}</p> : null}
         </div>
       ) : (
-        <p>{fusion.note ?? resolveText("dashboard:emptyFusion", "Слияния сейчас нет")}</p>
+        <p>{fusion.note ?? t("dashboard:emptyFusion")}</p>
       )}
     </section>
   );

@@ -8,11 +8,7 @@ import { PageBackdrop } from "../components/site/page-backdrop";
 import { landingPageCopy, landingPanelLinks, siteArtwork } from "../lib/site/content";
 
 export default function HomePage() {
-  const { t, ready } = useTranslation(["landing", "menu", "common"], {
-    useSuspense: false
-  });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const { t } = useTranslation(["landing", "menu", "common"], { useSuspense: false });
 
   return (
     <PageBackdrop imagePath={siteArtwork.landing.default}>
@@ -21,10 +17,10 @@ export default function HomePage() {
           <div className="landing-copy__body">
             <BrandMark label={landingPageCopy.brandLabel} />
             <h1 className="display-face">
-              {resolveText(landingPageCopy.titleKey, landingPageCopy.title)}
+              {t(landingPageCopy.titleKey)}
             </h1>
             <p>
-              {resolveText(landingPageCopy.bodyKey, landingPageCopy.body)}
+              {t(landingPageCopy.bodyKey)}
             </p>
           </div>
         </div>
@@ -33,29 +29,23 @@ export default function HomePage() {
           <BrandMark label={landingPageCopy.brandLabel} />
           <div className="landing-panel__stack">
             <h2 className="display-face">
-              {resolveText(landingPageCopy.panelTitleKey, landingPageCopy.panelTitle)}
+              {t(landingPageCopy.panelTitleKey)}
             </h2>
             <p>
-              {resolveText(landingPageCopy.panelBodyKey, landingPageCopy.panelBody)}
+              {t(landingPageCopy.panelBodyKey)}
             </p>
           </div>
           <nav
             className="landing-panel__stack"
-            aria-label={resolveText(
-              landingPageCopy.navigationAriaLabelKey,
-              landingPageCopy.navigationAriaLabel
-            )}
+            aria-label={t(landingPageCopy.navigationAriaLabelKey)}
           >
             {landingPanelLinks.map((link) => (
               <AtmosphericLink key={link.href} href={link.href}>
-                {resolveText(link.labelKey, link.label)}
+                {t(link.labelKey)}
               </AtmosphericLink>
             ))}
             <span className="atmos-link atmos-link--muted">
-              {resolveText(
-                landingPageCopy.memberLoginLaterKey,
-                landingPageCopy.memberLoginLater
-              )}
+              {t(landingPageCopy.memberLoginLaterKey)}
             </span>
           </nav>
         </aside>

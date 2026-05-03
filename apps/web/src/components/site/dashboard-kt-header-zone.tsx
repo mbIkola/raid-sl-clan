@@ -11,34 +11,30 @@ type DashboardKtHeaderZoneProps = {
 };
 
 export function DashboardKtHeaderZone({ header }: DashboardKtHeaderZoneProps) {
-  const { t, ready } = useTranslation("dashboard", { useSuspense: false });
-  const resolveText = (key: string, fallback: string): string =>
-    ready ? t(key, { defaultValue: fallback }) : fallback;
+  const { t } = useTranslation("dashboard", { useSuspense: false });
   const getCountdownLabel = (targetKind: ClanWarsHeader["targetKind"]) =>
     targetKind === "start"
-      ? resolveText("ktCountdownToStart", "До старта следующего окна")
-      : resolveText("ktCountdownToReset", "До сброса текущего окна");
+      ? t("ktCountdownToStart")
+      : t("ktCountdownToReset");
   const rewardsLabel = header.hasPersonalRewards
-    ? resolveText("ktRewardsWithPersonal", "С личными наградами")
-    : resolveText("ktRewardsWithoutPersonal", "Без личных наград");
+    ? t("ktRewardsWithPersonal")
+    : t("ktRewardsWithoutPersonal");
 
   return (
     <section className="panel-card panel-card--padded dashboard-stack">
-      <h2 className="display-face">
-        {resolveText("ktArchiveTitle", "Клановый турнир: архив")}
-      </h2>
+      <h2 className="display-face">{t("ktArchiveTitle")}</h2>
       <p>
         {getCountdownLabel(header.targetKind)}:{" "}
         <CountdownTimer
           targetIso={header.targetAt}
-          endedLabel={resolveText("ktWindowEnded", "Окно завершено, ожидаем обновление")}
+          endedLabel={t("ktWindowEnded")}
         />
       </p>
       <p>
-        {resolveText("ktRewardsLabel", "Награды")}: {rewardsLabel}
+        {t("ktRewardsLabel")}: {rewardsLabel}
       </p>
       <p>
-        {resolveText("ktWindowPeriodLabel", "Период окна")}:{" "}
+        {t("ktWindowPeriodLabel")}:{" "}
         <LocalizedDateTime iso={header.eventStartAt} /> -{" "}
         <LocalizedDateTime iso={header.eventEndsAt} />
       </p>
