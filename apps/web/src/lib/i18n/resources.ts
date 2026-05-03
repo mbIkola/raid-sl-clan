@@ -29,20 +29,26 @@ export const i18nResources: Resource = {
       memberLoginLater: "Вход для участников появится позже"
     },
     about: {
-      title: "О проекте без рекламной херни",
+      title: "О проекте",
       intro:
-        "Это пет-проект, потому что нас заебали скриншоты в Telegram и вечная возня в Excel. Никакой магии: просто нормальный клановый дашборд, где сразу видно, что происходит.",
+        "Это клановый дашборд для Raid Shadow Legends. Он появился, потому что собирать данные по скриншотам в Telegram и сводить всё в Excel — утомительно и ненадёжно. Здесь собрана базовая картина по клану в одном месте.",
       openDashboard: "Открыть дашборд",
+      openGitHub: "GitHub",
       sections: {
         whatThisPlaceIs: {
-          heading: "Почему это вообще понадобилось",
+          heading: "Зачем это нужно",
           body:
-            "В Raid почти нет вменяемых инструментов именно для клана. Есть сервисы для отдельного игрока, гайды и оптимизаторы, но с дисциплиной клана обычно всё по старинке: на глазок, в таблице и через десятки сообщений."
+            "В Raid почти нет инструментов для клановой аналитики. Обычно всё держится на чатах, таблицах и ручном контроле. Этот проект упрощает базовые вещи: видно активность, результаты и общую дисциплину без лишних действий."
         },
         whatComesLater: {
-          heading: "Что здесь считается победой",
+          heading: "Что считается успехом",
           body:
-            "Если 30 человек открывают страницу и за минуту понимают, кто не сходил на CB, кто слил CvC и кто стабильно тащит, значит всё работает. Не делаем пафосный \"инструмент номер один\", делаем штуку, которая экономит нервы."
+            "Если участники клана открывают страницу и быстро понимают, кто выполнил активности, а кто нет, значит дашборд выполняет свою задачу. Проект будет развиваться, но его ценность определяется тем, насколько он полезен уже сейчас."
+        },
+        note: {
+          heading: "Состояние проекта",
+          body:
+            "Проект развивается постепенно и может меняться. Некоторые функции могут быть упрощены или временно отсутствовать. Чего-то не хватает — welcome to contribute."
         }
       }
     },
@@ -144,6 +150,7 @@ export const i18nResources: Resource = {
       title: "Що це за місце",
       intro: "Публічне обличчя клану має читатися як намір, а не як напівпідключена панель.",
       openDashboard: "Відкрити дашборд",
+      openGitHub: "GitHub",
       sections: {
         whatThisPlaceIs: {
           heading: "Що це за місце",
@@ -154,6 +161,11 @@ export const i18nResources: Resource = {
           heading: "Що буде далі",
           body:
             "Автентифікація, інструменти учасника й персональна статистика з’являться в наступних ітераціях. Ця сторінка лишається публічною та редакційною."
+        },
+        note: {
+          heading: "Стан проєкту",
+          body:
+            "Проєкт розвивається поступово й може змінюватися. Частина функцій може бути спрощена або тимчасово недоступна."
         }
       }
     },
@@ -255,6 +267,7 @@ export const i18nResources: Resource = {
       title: "What This Place Is",
       intro: "The clan’s public face should read like intent, not like a half-connected control panel.",
       openDashboard: "Open dashboard",
+      openGitHub: "GitHub",
       sections: {
         whatThisPlaceIs: {
           heading: "What This Place Is",
@@ -265,6 +278,11 @@ export const i18nResources: Resource = {
           heading: "What Comes Later",
           body:
             "Authentication, member tools, and personal statistics arrive in later passes. This page stays public and editorial."
+        },
+        note: {
+          heading: "Project Status",
+          body:
+            "The project is evolving in steps and can change over time. Some functions may stay simplified or temporarily unavailable."
         }
       }
     },

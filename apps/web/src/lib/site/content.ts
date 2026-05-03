@@ -72,6 +72,13 @@ export const aboutPageSections = [
     body:
       "Authentication, member tools, and personal statistics arrive in later passes. This page stays public and editorial.",
     bodyKey: "about:sections.whatComesLater.body"
+  },
+  {
+    heading: "Project Status",
+    headingKey: "about:sections.note.heading",
+    body:
+      "The project is evolving in steps. Some features may stay simple, and some may be temporarily absent while the core flow is stabilized.",
+    bodyKey: "about:sections.note.body"
   }
 ] as const;
 
@@ -84,7 +91,10 @@ export const aboutPageCopy = {
   backToLanding: "Back to Landing",
   backToLandingKey: "common:backToLanding",
   openDashboard: "Open Dashboard",
-  openDashboardKey: "about:openDashboard"
+  openDashboardKey: "about:openDashboard",
+  openGitHub: "Open GitHub",
+  openGitHubKey: "about:openGitHub",
+  githubRepoUrl: "https://github.com/mbIkola/raid-sl-clan"
 } as const;
 
 export const notFoundPageCopy = {
