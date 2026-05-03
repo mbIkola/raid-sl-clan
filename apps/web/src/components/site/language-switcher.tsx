@@ -4,9 +4,9 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import {
   LANGUAGE_LABELS,
-  SUPPORTED_LANGUAGES,
-  type SupportedLanguage
+  SUPPORTED_LANGUAGES
 } from "../../lib/i18n/languages";
+import { normalizeLanguage } from "../../lib/i18n/resolve-language";
 import { useLocale } from "./locale-provider";
 
 export function LanguageSwitcher() {
@@ -20,7 +20,12 @@ export function LanguageSwitcher() {
       <select
         aria-label={ariaLabel}
         value={language}
-        onChange={(event) => setLanguage(event.target.value as SupportedLanguage)}
+        onChange={(event) => {
+          const nextLanguage = normalizeLanguage(event.target.value);
+          if (nextLanguage) {
+            setLanguage(nextLanguage);
+          }
+        }}
       >
         {SUPPORTED_LANGUAGES.map((nextLanguage) => (
           <option key={nextLanguage} value={nextLanguage}>

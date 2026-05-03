@@ -1,6 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { I18N_STORAGE_KEY } from "../../lib/i18n/languages";
 import { LanguageSwitcher } from "./language-switcher";
 import { LocaleProvider } from "./locale-provider";
 
@@ -19,6 +20,12 @@ describe("LanguageSwitcher", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
+    localStorage.clear();
+    document.documentElement.lang = "";
+    Object.defineProperty(window.navigator, "languages", {
+      configurable: true,
+      value: ["ru-RU", "en-US"]
+    });
   });
 
   afterEach(() => {
@@ -41,5 +48,55 @@ describe("LanguageSwitcher", () => {
       (option) => option.textContent
     );
     expect(options).toEqual(["Русский", "Українська", "English"]);
+  });
+
+  it("updates selected value and persists language when changed", async () => {
+    await act(async () => {
+      root.render(
+        <LocaleProvider>
+          <LanguageSwitcher />
+        </LocaleProvider>
+      );
+    });
+
+    const select = container.querySelector("select");
+    expect(select).not.toBeNull();
+
+    await act(async () => {
+      if (!select) {
+        return;
+      }
+      select.value = "en";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    expect(select?.value).toBe("en");
+    expect(localStorage.getItem(I18N_STORAGE_KEY)).toBe("en");
+    expect(document.documentElement.lang).toBe("en");
+  });
+
+  it("ignores invalid language values", async () => {
+    await act(async () => {
+      root.render(
+        <LocaleProvider>
+          <LanguageSwitcher />
+        </LocaleProvider>
+      );
+    });
+
+    const select = container.querySelector("select");
+    expect(select).not.toBeNull();
+
+    await act(async () => {
+      if (!select) {
+        return;
+      }
+      select.value = "xx";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+
+    expect(select?.value).toBe("ru");
+    expect(localStorage.getItem(I18N_STORAGE_KEY)).toBe("ru");
+    expect(document.documentElement.lang).toBe("ru");
   });
 });
