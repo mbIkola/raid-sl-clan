@@ -17,7 +17,7 @@
     "sourceFile": { "type": "string" },
     "sourceType": {
       "type": "string",
-      "enum": ["image", "markdown"]
+      "enum": ["image"]
     },
     "sourceReportKey": {
       "type": "string",
