@@ -35,7 +35,8 @@ describe("site content", () => {
   it("defines the expected public about page sections", () => {
     expect(aboutPageSections.map((section) => section.heading)).toEqual([
       "What This Place Is",
-      "What Comes Later"
+      "What Comes Later",
+      "Project Status"
     ]);
   });
 
@@ -53,6 +54,7 @@ describe("site content", () => {
       aboutPageCopy.introKey,
       aboutPageCopy.backToLandingKey,
       aboutPageCopy.openDashboardKey,
+      aboutPageCopy.openGitHubKey,
       notFoundPageCopy.messageKey,
       notFoundPageCopy.backHomeKey
     ];

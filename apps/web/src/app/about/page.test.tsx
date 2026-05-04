@@ -15,11 +15,14 @@ describe("AboutPage", () => {
       </I18nextProvider>
     );
 
-    expect(html).toContain("Що це за місце");
-    expect(html).toContain("Що буде далі");
+    expect(html).toContain("Про проєкт");
+    expect(html).toContain("Навіщо це потрібно");
+    expect(html).toContain("Що вважається успіхом");
+    expect(html).toContain("Стан проєкту");
     expect(html).toContain("Raid SL Clan");
     expect(html).toMatch(/<a[^>]*href="\/"[^>]*>Назад на головну<\/a>/);
     expect(html).toMatch(/<a[^>]*href="\/dashboard"[^>]*>Відкрити дашборд<\/a>/);
+    expect(html).toMatch(/<a[^>]*href="https:\/\/github\.com\/mbIkola\/raid-sl-clan"[^>]*>.*GitHub.*<\/a>/);
     expect(html).not.toContain("Back to Landing");
     expect(html.match(/class="panel-card panel-card--editorial editorial-stack"/g)).toHaveLength(
       aboutPageSections.length

@@ -111,6 +111,15 @@ img {
   color: var(--site-muted);
 }
 
+.about-github-link {
+  width: fit-content;
+}
+
+.about-github-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
 .panel-card {
   border: 1px solid var(--site-border);
   border-radius: 1.25rem;
