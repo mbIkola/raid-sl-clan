@@ -142,8 +142,8 @@ Behavior:
 
 - Input: target ISO datetime.
 - Output formatting:
-  - default: days + hours
-  - under 1 hour: minutes + seconds
+  - `>= 24h`: days + hours
+  - `< 24h`: hours + minutes (no `0d` prefix)
 - Adaptive tick cadence (do not rerender every second when unnecessary).
 - Emit one-shot `onTimerEnd` when crossing zero.
 - Stop internal interval after end event.
@@ -241,7 +241,7 @@ Recommended order:
 
 This order keeps the dashboard immediately useful while exposing data gaps explicitly instead of hiding them.
 
-## 14. Post-Merge Decisions (2026-05-03)
+## 14. Post-Merge Decisions (2026-05-03, updated 2026-05-04)
 
 The first production implementation was merged to `main` via PR #33 on 2026-05-03.
 
@@ -249,8 +249,8 @@ Documented decisions from implementation:
 
 - `Hydra` countdown anchor is fixed to weekly reset at Wednesday `08:00 UTC`.
 - `Chimera` countdown anchor is fixed to weekly reset at Thursday `11:30 UTC`.
-- `KT` countdown anchor is fixed to a biweekly cycle starting Tuesday `10:00 UTC`, event duration `48h`.
-- KT personal rewards schedule is currently seeded from known anchor start `2026-05-05T10:00:00.000Z` (`hasPersonalRewards = true` for that start).
+- `KT` countdown anchor is fixed to a biweekly cycle starting Tuesday `09:00 UTC`, event duration `48h`.
+- KT personal rewards schedule is currently seeded from known anchor start `2026-05-05T09:00:00.000Z` (`hasPersonalRewards = true` for that start).
 
 Review-driven technical decisions merged with the implementation:
 

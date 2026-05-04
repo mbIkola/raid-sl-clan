@@ -57,12 +57,12 @@ const chimeraResetAnchor: WeeklyUtcAnchorConfig = {
   minute: 30
 };
 
-const clanWarsInitialStartUtc = "2026-05-05T10:00:00.000Z";
+const clanWarsInitialStartUtc = "2026-05-05T09:00:00.000Z";
 const clanWarsIntervalMs = 14 * 24 * 60 * 60 * 1000;
 const clanWarsDurationMs = 48 * 60 * 60 * 1000;
 
 const clanWarsPersonalRewardsStarts = new Set<string>([
-  "2026-05-05T10:00:00.000Z"
+  "2026-05-05T09:00:00.000Z"
 ]);
 
 export const getNextHydraResetAnchorUtc = (nowIso: string) =>
