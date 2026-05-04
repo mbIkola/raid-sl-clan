@@ -1,7 +1,7 @@
 # Raid SL Clan Knowledge Base
 
 This file is a working knowledge base for agents and humans operating in this repository.
-It reflects repository state as of 2026-05-03 and should be corrected when code and docs drift.
+It reflects repository state as of 2026-05-04 and should be corrected when code and docs drift.
 
 ## Current Snapshot
 
@@ -13,6 +13,8 @@ It reflects repository state as of 2026-05-03 and should be corrected when code 
 - Repository-owned D1 migrations live in `platform/migrations`.
 - D1 schema migrations `0001_bootstrap.sql` and `0002_clan_competition_schema.sql` are applied for local development and the remote production database.
 - Remote preview D1 is currently not maintained as a required baseline and may intentionally lag behind production schema.
+- Countdown display contract is `days + hours` for `>= 24h` and `hours + minutes` for `< 24h` (no `0d` prefix).
+- KT countdown anchor is currently a biweekly Tuesday `09:00 UTC` start with `48h` duration; known personal rewards seed anchor is `2026-05-05T09:00:00.000Z`.
 - `pnpm typecheck` passes across the current workspace skeleton.
 - Tests exist and should be run from the workspace root with `pnpm test`.
 

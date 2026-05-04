@@ -69,7 +69,7 @@ describe("CountdownTimer", () => {
       );
     });
 
-    expect(container.textContent).toContain("0m 2s");
+    expect(container.textContent).toContain("0h 0m");
 
     await act(async () => {
       vi.advanceTimersByTime(3000);

@@ -127,7 +127,7 @@ Use locale-aware `Intl.DateTimeFormat` with user timezone resolution (`Intl.Date
 
 1. Replace static unit suffixes (`d/h/m/s`) with localized units/messages.
 2. Prefer `Intl.RelativeTimeFormat` where semantics match.
-3. Keep current countdown update cadence; only localized rendering changes.
+3. Preserve countdown behavior contract from dashboard spec: `>= 24h` as `days + hours`, `< 24h` as `hours + minutes`, with adaptive cadence (`1m+` minute ticks, final minute second ticks).
 
 ## 9. Error Handling
 

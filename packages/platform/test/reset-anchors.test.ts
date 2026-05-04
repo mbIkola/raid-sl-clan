@@ -34,13 +34,13 @@ describe("dashboard reset anchors", () => {
     ).toBe("2026-05-08T20:45:00.000Z");
   });
 
-  it("uses Tuesday 10:00 UTC as clan wars start anchor and marks 2026-05-05 as personal rewards", () => {
+  it("uses Tuesday 09:00 UTC as clan wars start anchor and marks 2026-05-05 as personal rewards", () => {
     const state = getClanWarsAnchorStateUtc("2026-05-03T11:22:00.000Z");
 
     expect(state.targetKind).toBe("start");
-    expect(state.targetAt).toBe("2026-05-05T10:00:00.000Z");
-    expect(state.eventStartAt).toBe("2026-05-05T10:00:00.000Z");
-    expect(state.eventEndsAt).toBe("2026-05-07T10:00:00.000Z");
+    expect(state.targetAt).toBe("2026-05-05T09:00:00.000Z");
+    expect(state.eventStartAt).toBe("2026-05-05T09:00:00.000Z");
+    expect(state.eventEndsAt).toBe("2026-05-07T09:00:00.000Z");
     expect(state.hasPersonalRewards).toBe(true);
   });
 
@@ -48,10 +48,10 @@ describe("dashboard reset anchors", () => {
     const activeState = getClanWarsAnchorStateUtc("2026-05-06T12:00:00.000Z");
 
     expect(activeState.targetKind).toBe("reset");
-    expect(activeState.targetAt).toBe("2026-05-07T10:00:00.000Z");
+    expect(activeState.targetAt).toBe("2026-05-07T09:00:00.000Z");
 
-    const postEventState = getClanWarsAnchorStateUtc("2026-05-07T10:00:00.000Z");
+    const postEventState = getClanWarsAnchorStateUtc("2026-05-07T09:00:00.000Z");
     expect(postEventState.targetKind).toBe("start");
-    expect(postEventState.targetAt).toBe("2026-05-19T10:00:00.000Z");
+    expect(postEventState.targetAt).toBe("2026-05-19T09:00:00.000Z");
   });
 });
