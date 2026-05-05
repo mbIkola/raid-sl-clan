@@ -64,10 +64,14 @@ Telegram support is out of scope for this implementation cycle, but logic bounda
   - HTTP route handlers only.
   - Auth gate and request/response translation.
   - No D1 SQL in route files.
+- `packages/core`
+  - domain-safe primitives, normalization helpers, and pure validation rules.
+  - no Cloudflare, no D1, no transport dependencies.
 - `packages/application`
   - `applyClanWarsIntermediateResults` use-case.
   - `createClanWarsPlayers` use-case.
-  - Cross-field business validation.
+  - orchestration and use-case sequencing over ports.
+  - transport-independent error mapping.
 - `packages/ports`
   - contracts for repositories/services used by use-cases.
 - `packages/platform`
@@ -132,7 +136,32 @@ Behavior:
 - Creates primary `player_alias` (`game_nickname`) for each player.
 - Idempotent by alias uniqueness: existing alias returns existing player record instead of hard failure.
 
-## 6.2 `POST /apply`
+## 6.2 `GET /roster`
+
+Returns authoritative player roster with known aliases for CLI fuzzy matching.
+
+Response:
+
+```json
+{
+  "players": [
+    {
+      "playerId": 11,
+      "mainNickname": "AZAZEL",
+      "status": "active",
+      "aliases": ["AZAZEL", "AZAZELW"]
+    }
+  ]
+}
+```
+
+Behavior:
+
+- Source of truth is `player_profile` + `player_alias`.
+- Default filter is active players only.
+- Optional `?includeInactive=1` for operator diagnostics.
+
+## 6.3 `POST /apply`
 
 Applies authoritative intermediate results for one KT window.
 
@@ -191,6 +220,14 @@ Response:
 }
 ```
 
+Meta persistence mapping in v1:
+
+- `meta.hasPersonalRewards` -> `clan_wars_report.has_personal_rewards`.
+- `meta.sourceKind` -> `report_import.source_kind` (and mirrored to `clan_wars_report.source_system`).
+- `meta.opponentClanName`, `meta.capturedAt`, optional `meta.clanTotalPointsMine` -> JSON stored in `report_import.notes`.
+
+No new DB columns are required for v1 metadata persistence.
+
 ## 7. Window Resolution and Creation
 
 `apply` must not require a pre-existing `competition_window_id`.
@@ -204,25 +241,30 @@ Server behavior:
 2. if missing, create `competition_window`:
    - `cadence_slot = "biweekly"`,
    - `rotation_number = NULL`,
-   - derive `season_year` and `week_of_year` from `eventStartAt`.
+   - derive `season_year` and `week_of_year` from `eventEndsAt` using the same convention as existing migrations:
+     - `season_year = CAST(strftime('%Y', eventEndsAt) AS INTEGER)`
+     - `week_of_year = CAST(strftime('%W', eventEndsAt) AS INTEGER) + 1`.
 
 This keeps API stable even when operator uploads a fresh window before any scheduled seeding task.
 
 ## 8. Transaction Semantics (`full replace`)
 
-`POST /apply` executes in one transaction:
+`POST /apply` uses a two-phase import lifecycle:
 
-1. resolve/create `competition_window`;
-2. create `report_import` record;
-3. upsert/create `clan_wars_report` for window and apply report metadata;
-4. delete existing `clan_wars_player_score` rows for that report/window;
-5. insert all payload rows;
-6. set `report_import.status = "applied"` and `finished_at`.
+1. Create `report_import` outside the replace transaction with `status = "pending"`.
+2. Start transaction.
+3. Resolve/create `competition_window`.
+4. Upsert/create `clan_wars_report` for window and apply report metadata.
+5. Delete existing `clan_wars_player_score` rows for that report/window.
+6. Insert all payload rows.
+7. Commit transaction.
+8. Update `report_import.status = "applied"` and `finished_at`.
 
 On any validation or write failure:
 
-- rollback transaction fully;
-- mark import failed where possible (or return explicit failure if transaction never opened).
+- rollback replace transaction fully;
+- update `report_import.status = "failed"` and `finished_at` (because the import row exists outside the transaction);
+- return explicit error response.
 
 ## 9. CLI Flow
 
@@ -231,7 +273,7 @@ On any validation or write failure:
 3. If unresolved:
    - offer auto-suggested window; or
    - manual window entry.
-4. Load current roster and aliases.
+4. Load current roster and aliases via `GET /roster`.
 5. Fuzzy-match OCR names to known players.
 6. Build preview:
    - window/meta summary,
