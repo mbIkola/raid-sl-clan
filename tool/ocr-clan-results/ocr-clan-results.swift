@@ -44,6 +44,8 @@ struct CLIOptions {
   let participantsPath: String
   let outputPath: String
   let maxMineTotalDiffRatio: Double
+  let windowStartAt: String?
+  let windowEndsAt: String?
 }
 
 struct OCRToken {
@@ -92,6 +94,7 @@ func printUsage() {
       --image /absolute/path/to/10.04.25.jpg \\
       --participants-json /absolute/path/to/clan-members.json \\
       [--output tool/ocr-clan-results/out/page-ocr-clan-wars.json] \\
+      [--window-start-at 2026-05-05T09:00:00Z --window-ends-at 2026-05-07T09:00:00Z] \\
       [--max-mine-total-diff-ratio 0.01]
 
   Supported participants JSON shapes:
@@ -107,6 +110,8 @@ func parseOptions() throws -> CLIOptions {
   var participantsPath: String?
   var outputPath = "tool/ocr-clan-results/out/page-ocr-clan-wars.json"
   var maxMineTotalDiffRatio = 0.01
+  var windowStartAt: String?
+  var windowEndsAt: String?
 
   var index = 1
   while index < CommandLine.arguments.count {
@@ -135,6 +140,16 @@ func parseOptions() throws -> CLIOptions {
         }
         maxMineTotalDiffRatio = value
       }
+    case "--window-start-at":
+      index += 1
+      if index < CommandLine.arguments.count {
+        windowStartAt = CommandLine.arguments[index]
+      }
+    case "--window-ends-at":
+      index += 1
+      if index < CommandLine.arguments.count {
+        windowEndsAt = CommandLine.arguments[index]
+      }
     case "--help", "-h":
       printUsage()
       exit(0)
@@ -157,11 +172,21 @@ func parseOptions() throws -> CLIOptions {
     throw CLIError.unsupportedImageFile(imagePath)
   }
 
+  let hasStart = windowStartAt != nil
+  let hasEnd = windowEndsAt != nil
+  if hasStart != hasEnd {
+    throw CLIError.invalidOptionValue(
+      "--window-start-at and --window-ends-at must be provided together"
+    )
+  }
+
   return CLIOptions(
     imagePath: imagePath,
     participantsPath: participantsPath,
     outputPath: outputPath,
-    maxMineTotalDiffRatio: maxMineTotalDiffRatio
+    maxMineTotalDiffRatio: maxMineTotalDiffRatio,
+    windowStartAt: windowStartAt,
+    windowEndsAt: windowEndsAt
   )
 }
 
@@ -319,6 +344,59 @@ func parseWindow(from fileName: String) -> TournamentWindow? {
     sourceReportKey: "clan_wars:\(startsOn)_\(endsOn)",
     startsAt: startsAt,
     endsAt: endsAt
+  )
+}
+
+func parseISO8601Timestamp(_ value: String) -> Date? {
+  let formatterWithFraction = ISO8601DateFormatter()
+  formatterWithFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+  if let parsed = formatterWithFraction.date(from: value) {
+    return parsed
+  }
+
+  let formatter = ISO8601DateFormatter()
+  formatter.formatOptions = [.withInternetDateTime]
+  return formatter.date(from: value)
+}
+
+func buildWindowFromOverrides(startAt: String, endsAt: String) throws -> TournamentWindow {
+  guard let startDate = parseISO8601Timestamp(startAt), let endDate = parseISO8601Timestamp(endsAt)
+  else {
+    throw CLIError.invalidOptionValue("window override timestamps must be valid ISO-8601 UTC values")
+  }
+
+  let expectedDuration: TimeInterval = 48 * 60 * 60
+  let duration = endDate.timeIntervalSince(startDate)
+
+  guard duration > 0 else {
+    throw CLIError.invalidOptionValue("window override requires end > start")
+  }
+
+  guard abs(duration - expectedDuration) < 0.001 else {
+    throw CLIError.invalidOptionValue("window override duration must be exactly 48h")
+  }
+
+  var utcCalendar = Calendar(identifier: .gregorian)
+  utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+
+  let dayFormatter = DateFormatter()
+  dayFormatter.calendar = utcCalendar
+  dayFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+  dayFormatter.dateFormat = "yyyy-MM-dd"
+
+  let startsOn = dayFormatter.string(from: startDate)
+  let endsOn = dayFormatter.string(from: endDate)
+
+  let dateFormatter = DateFormatter()
+  dateFormatter.calendar = utcCalendar
+  dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+  dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+
+  return TournamentWindow(
+    sourceReportKey: "clan_wars:\(startsOn)_\(endsOn)",
+    startsAt: dateFormatter.string(from: startDate),
+    endsAt: dateFormatter.string(from: endDate)
   )
 }
 
@@ -753,8 +831,14 @@ do {
   let imageURL = URL(fileURLWithPath: options.imagePath)
   let fileName = imageURL.lastPathComponent
 
-  guard let window = parseWindow(from: fileName) else {
-    throw CLIError.cannotInferWindowFromFileName(fileName)
+  let window: TournamentWindow
+  if let windowStartAt = options.windowStartAt, let windowEndsAt = options.windowEndsAt {
+    window = try buildWindowFromOverrides(startAt: windowStartAt, endsAt: windowEndsAt)
+  } else {
+    guard let inferredWindow = parseWindow(from: fileName) else {
+      throw CLIError.cannotInferWindowFromFileName(fileName)
+    }
+    window = inferredWindow
   }
 
   let participants = try loadParticipantsList(from: options.participantsPath)

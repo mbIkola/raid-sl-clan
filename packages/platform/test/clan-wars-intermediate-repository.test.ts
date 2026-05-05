@@ -3,7 +3,10 @@ import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { createD1ClanWarsIntermediateRepository } from "@raid/platform";
+import {
+  ClanWarsUnknownPlayerIdError,
+  createD1ClanWarsIntermediateRepository
+} from "@raid/platform";
 
 type D1RunMeta = {
   last_row_id?: number;
@@ -286,6 +289,65 @@ describe("createD1ClanWarsIntermediateRepository", () => {
       .first<{ count: number }>();
 
     expect(profiles?.count ?? 0).toBe(1);
+  });
+
+  it("throws unknown-player-id validation error and marks import as failed", async () => {
+    const sqlite = createD1SqliteAdapter(createSqlite());
+    const repository = createD1ClanWarsIntermediateRepository(sqlite as unknown as D1Database);
+
+    const azazel = await sqlite
+      .prepare("INSERT INTO player_profile (main_nickname, status) VALUES (?, ?)")
+      .bind("AZAZEL", "active")
+      .run();
+
+    const request = {
+      windowRef: {
+        activityType: "clan_wars" as const,
+        eventStartAt: "2026-05-05T09:00:00.000Z",
+        eventEndsAt: "2026-05-07T09:00:00.000Z"
+      },
+      meta: {
+        hasPersonalRewards: true,
+        opponentClanName: "Best in Raid",
+        sourceKind: "ocr_cli_intermediate",
+        capturedAt: "2026-05-05T12:00:00+03:00"
+      },
+      rosterExpectation: { expectedCount: 2 },
+      players: [
+        {
+          playerId: Number(azazel.meta?.last_row_id),
+          displayNameAtImport: "AZAZEL",
+          points: 167681
+        },
+        {
+          playerId: 999999,
+          displayNameAtImport: "Ghost",
+          points: 158050
+        }
+      ]
+    };
+
+    let caughtError: unknown;
+    try {
+      await repository.applyResults({ request });
+    } catch (error) {
+      caughtError = error;
+    }
+
+    expect(caughtError).toBeInstanceOf(ClanWarsUnknownPlayerIdError);
+    expect(caughtError).toEqual(
+      expect.objectContaining({
+        name: "ClanWarsUnknownPlayerIdError",
+        playerIds: [999999]
+      })
+    );
+
+    const latestImport = await sqlite
+      .prepare("SELECT status FROM report_import ORDER BY id DESC LIMIT 1")
+      .bind()
+      .first<{ status: string }>();
+
+    expect(latestImport?.status).toBe("failed");
   });
 
   it("marks import failed and rolls back score writes when applyResults errors in transaction", async () => {

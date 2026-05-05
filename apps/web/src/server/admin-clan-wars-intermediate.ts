@@ -3,7 +3,11 @@ import {
   createCreateClanWarsPlayers,
   createGetClanWarsIntermediateRoster
 } from "@raid/application";
-import { createD1ClanWarsIntermediateRepository, verifyAdminToken } from "@raid/platform";
+import {
+  ClanWarsUnknownPlayerIdError,
+  createD1ClanWarsIntermediateRepository,
+  verifyAdminToken
+} from "@raid/platform";
 import type { ClanWarsApplyRequest } from "@raid/core";
 import type { ClanWarsCreatePlayerInput } from "@raid/ports";
 
@@ -168,6 +172,14 @@ const getApplyValidationErrorCodes = (error: unknown): string[] | undefined => {
   return codes;
 };
 
+const getUnknownPlayerIds = (error: unknown): number[] | undefined => {
+  if (!(error instanceof ClanWarsUnknownPlayerIdError)) {
+    return undefined;
+  }
+
+  return error.playerIds;
+};
+
 export const handleClanWarsIntermediateRequest = async ({
   request,
   env,
@@ -244,6 +256,14 @@ export const handleClanWarsIntermediateRequest = async ({
       ...result
     });
   } catch (error) {
+    const unknownPlayerIds = getUnknownPlayerIds(error);
+    if (unknownPlayerIds) {
+      return badRequest("invalid-apply-request", {
+        codes: ["unknown-player-id"],
+        unknownPlayerIds
+      });
+    }
+
     const codes = getApplyValidationErrorCodes(error);
     if (codes) {
       return badRequest("invalid-apply-request", { codes });

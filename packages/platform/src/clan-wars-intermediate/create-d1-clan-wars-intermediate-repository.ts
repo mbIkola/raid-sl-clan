@@ -35,6 +35,16 @@ type RosterDbRow = {
   aliases_csv: string | null;
 };
 
+export class ClanWarsUnknownPlayerIdError extends Error {
+  readonly playerIds: number[];
+
+  constructor(playerIds: number[]) {
+    super(`unknown-player-id:${playerIds.join(",")}`);
+    this.name = "ClanWarsUnknownPlayerIdError";
+    this.playerIds = playerIds;
+  }
+}
+
 const buildScopeKey = (request: ClanWarsApplyRequest) =>
   `clan_wars:${request.windowRef.eventStartAt}_${request.windowRef.eventEndsAt}:intermediate`;
 
@@ -61,6 +71,9 @@ const toAliasSet = (mainNickname: string, aliases: string[]) => {
 
   return Array.from(new Set(normalized));
 };
+
+const uniquePositiveIntegers = (values: number[]) =>
+  Array.from(new Set(values.filter((value) => Number.isInteger(value) && value > 0)));
 
 export const createD1ClanWarsIntermediateRepository = (
   db: D1DatabaseLike,
@@ -331,6 +344,20 @@ export const createD1ClanWarsIntermediateRepository = (
 
         if (!report) {
           throw new Error("missing-clan-wars-report");
+        }
+
+        const requestedPlayerIds = uniquePositiveIntegers(request.players.map((row) => row.playerId));
+        if (requestedPlayerIds.length > 0) {
+          const placeholders = requestedPlayerIds.map(() => "?").join(", ");
+          const existingPlayerRows = await all<{ id: number }>(
+            `SELECT id FROM player_profile WHERE id IN (${placeholders})`,
+            ...requestedPlayerIds,
+          );
+          const existingIds = new Set(existingPlayerRows.map((row) => row.id));
+          const unknownPlayerIds = requestedPlayerIds.filter((playerId) => !existingIds.has(playerId));
+          if (unknownPlayerIds.length > 0) {
+            throw new ClanWarsUnknownPlayerIdError(unknownPlayerIds);
+          }
         }
 
         await run("DELETE FROM clan_wars_player_score WHERE clan_wars_report_id = ?", report.id);

@@ -3,7 +3,11 @@ import {
   createCreateClanWarsPlayers,
   createGetClanWarsIntermediateRoster
 } from "@raid/application";
-import { createD1ClanWarsIntermediateRepository, verifyAdminToken } from "@raid/platform";
+import {
+  ClanWarsUnknownPlayerIdError,
+  createD1ClanWarsIntermediateRepository,
+  verifyAdminToken
+} from "@raid/platform";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { handleClanWarsIntermediateRequest } from "./admin-clan-wars-intermediate";
 
@@ -14,6 +18,15 @@ vi.mock("@raid/application", () => ({
 }));
 
 vi.mock("@raid/platform", () => ({
+  ClanWarsUnknownPlayerIdError: class ClanWarsUnknownPlayerIdError extends Error {
+    readonly playerIds: number[];
+
+    constructor(playerIds: number[]) {
+      super(`unknown-player-id:${playerIds.join(",")}`);
+      this.name = "ClanWarsUnknownPlayerIdError";
+      this.playerIds = playerIds;
+    }
+  },
   verifyAdminToken: vi.fn(),
   createD1ClanWarsIntermediateRepository: vi.fn()
 }));
@@ -422,6 +435,41 @@ describe("handleClanWarsIntermediateRequest", () => {
     await expect(response.json()).resolves.toEqual({
       ok: false,
       error: "apply-failed"
+    });
+  });
+
+  it("returns 400 with unknown-player-id code for missing player references", async () => {
+    const db = {} as D1Database;
+    const repository = createRepository();
+    const apply = vi
+      .fn()
+      .mockRejectedValue(new ClanWarsUnknownPlayerIdError([404, 505]));
+
+    vi.mocked(verifyAdminToken).mockReturnValue(true);
+    vi.mocked(createD1ClanWarsIntermediateRepository).mockReturnValue(repository);
+    vi.mocked(createApplyClanWarsIntermediateResults).mockReturnValue(apply);
+
+    const response = await handleClanWarsIntermediateRequest({
+      request: new Request("https://raid.example/api/admin/clan-wars/intermediate/apply", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify(createValidApplyPayload())
+      }),
+      env: {
+        DB: db,
+        ADMIN_INGEST_TOKEN: "expected-token"
+      },
+      action: "apply"
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "invalid-apply-request",
+      codes: ["unknown-player-id"],
+      unknownPlayerIds: [404, 505]
     });
   });
 });

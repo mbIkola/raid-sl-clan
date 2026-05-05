@@ -9,6 +9,9 @@ import { fileURLToPath } from "node:url";
 
 const SCRIPT_DIR = fileURLToPath(new URL(".", import.meta.url));
 const DEFAULT_API_BASE_URL = "http://localhost:8787/api/admin/clan-wars/intermediate";
+const KT_WINDOW_ANCHOR_START_AT = "2025-03-25T09:00:00Z";
+const KT_CYCLE_MS = 14 * 24 * 60 * 60 * 1000;
+const KT_WINDOW_MS = 48 * 60 * 60 * 1000;
 const USAGE = `Usage:
   node tool/ocr-clan-results/upload-intermediate.mjs --image /absolute/path/to/screenshot.jpg [--api-base-url URL] [--token TOKEN]
 
@@ -94,23 +97,35 @@ const requestJson = async (url, token, init = {}) => {
   if (!response.ok) {
     const errorMessage =
       typeof payload.error === "string" ? payload.error : `request-failed:${response.status}`;
-    throw new Error(`${response.status} ${errorMessage}`);
+    const details = [];
+    if (Array.isArray(payload.codes) && payload.codes.length > 0) {
+      details.push(`codes=${payload.codes.join(",")}`);
+    }
+    if (Array.isArray(payload.unknownPlayerIds) && payload.unknownPlayerIds.length > 0) {
+      details.push(`unknownPlayerIds=${payload.unknownPlayerIds.join(",")}`);
+    }
+    const detailsSuffix = details.length > 0 ? ` (${details.join("; ")})` : "";
+    throw new Error(`${response.status} ${errorMessage}${detailsSuffix}`);
   }
 
   return payload;
 };
 
-const confirm = async (question) => {
+const promptText = async (question) => {
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
   try {
-    const answer = (await rl.question(`${question} [y/N] `)).trim().toLowerCase();
-    return answer === "y" || answer === "yes";
+    return (await rl.question(question)).trim();
   } finally {
     rl.close();
   }
+};
+
+const confirm = async (question) => {
+  const answer = (await promptText(`${question} [y/N] `)).toLowerCase();
+  return answer === "y" || answer === "yes";
 };
 
 const ensureArray = (value, fieldName) => {
@@ -203,6 +218,158 @@ const resolveRowsToRoster = (ocrRows, rosterByAlias) => {
   return { resolvedRows, missing };
 };
 
+const toIsoSeconds = (value) => value.toISOString().replace(".000Z", "Z");
+
+const isFiniteDate = (value) => Number.isFinite(value.getTime());
+
+const inferClosestKtWindowFromReferenceDate = (referenceDate) => {
+  const anchorStartMs = Date.parse(KT_WINDOW_ANCHOR_START_AT);
+  const referenceMs = referenceDate.getTime();
+  if (!Number.isFinite(anchorStartMs) || !Number.isFinite(referenceMs)) {
+    return null;
+  }
+
+  const approxCycle = Math.round((referenceMs - anchorStartMs) / KT_CYCLE_MS);
+  let bestCandidate = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+
+  for (let cycle = approxCycle - 2; cycle <= approxCycle + 2; cycle += 1) {
+    if (cycle < 0) {
+      continue;
+    }
+
+    const startMs = anchorStartMs + cycle * KT_CYCLE_MS;
+    const endMs = startMs + KT_WINDOW_MS;
+    const distance =
+      referenceMs >= startMs && referenceMs <= endMs
+        ? 0
+        : Math.min(Math.abs(referenceMs - startMs), Math.abs(referenceMs - endMs));
+
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestCandidate = {
+        eventStartAt: toIsoSeconds(new Date(startMs)),
+        eventEndsAt: toIsoSeconds(new Date(endMs)),
+      };
+    }
+  }
+
+  return bestCandidate;
+};
+
+const normalizeManualWindowOverride = (startAtInput, endsAtInput) => {
+  const startMs = Date.parse(startAtInput);
+  const endMs = Date.parse(endsAtInput);
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) {
+    return { ok: false, error: "start/end must be valid ISO timestamps" };
+  }
+
+  if (endMs <= startMs) {
+    return { ok: false, error: "end must be after start" };
+  }
+
+  if (endMs - startMs !== KT_WINDOW_MS) {
+    return { ok: false, error: "window duration must be exactly 48h" };
+  }
+
+  const startDate = new Date(startMs);
+  const endDate = new Date(endMs);
+  if (!isFiniteDate(startDate) || !isFiniteDate(endDate)) {
+    return { ok: false, error: "start/end must be valid ISO timestamps" };
+  }
+
+  return {
+    ok: true,
+    windowOverride: {
+      eventStartAt: toIsoSeconds(startDate),
+      eventEndsAt: toIsoSeconds(endDate),
+    },
+  };
+};
+
+const resolveWindowOverrideFallback = async () => {
+  console.log("Could not infer KT window from screenshot filename.");
+
+  const candidate = inferClosestKtWindowFromReferenceDate(new Date());
+  if (candidate) {
+    console.log(
+      `Auto-detected candidate from KT anchor: ${candidate.eventStartAt} .. ${candidate.eventEndsAt}`
+    );
+    const useCandidate = await confirm("Use auto-detected candidate window?");
+    if (useCandidate) {
+      return candidate;
+    }
+  }
+
+  const useManual = await confirm("Provide KT window manually?");
+  if (!useManual) {
+    return null;
+  }
+
+  while (true) {
+    const manualStart = await promptText(
+      "Window start UTC ISO (example: 2026-05-05T09:00:00Z): "
+    );
+    const manualEnd = await promptText(
+      "Window end UTC ISO (example: 2026-05-07T09:00:00Z): "
+    );
+
+    const normalized = normalizeManualWindowOverride(manualStart, manualEnd);
+    if (normalized.ok) {
+      return normalized.windowOverride;
+    }
+
+    console.error(`Invalid manual window: ${normalized.error}`);
+    const retry = await confirm("Retry manual window input?");
+    if (!retry) {
+      return null;
+    }
+  }
+};
+
+const runSwiftOcr = ({
+  swiftScriptPath,
+  imagePath,
+  participantsPath,
+  ocrOutputPath,
+  windowOverride,
+}) => {
+  const args = [
+    swiftScriptPath,
+    "--image",
+    imagePath,
+    "--participants-json",
+    participantsPath,
+    "--output",
+    ocrOutputPath,
+  ];
+
+  if (windowOverride) {
+    args.push(
+      "--window-start-at",
+      windowOverride.eventStartAt,
+      "--window-ends-at",
+      windowOverride.eventEndsAt
+    );
+  }
+
+  const result = spawnSync("swift", args, {
+    encoding: "utf8",
+  });
+
+  if (result.stdout) {
+    process.stdout.write(result.stdout);
+  }
+  if (result.stderr) {
+    process.stderr.write(result.stderr);
+  }
+
+  return result;
+};
+
+const hasWindowInferenceFailure = (swiftOutput) =>
+  swiftOutput.includes("Cannot infer clan wars window from screenshot file name");
+
 const main = async () => {
   const options = parseArgs();
   if (options.help) {
@@ -230,19 +397,31 @@ const main = async () => {
       "utf8"
     );
 
-    const ocrRun = spawnSync(
-      "swift",
-      [
-        swiftScriptPath,
-        "--image",
-        imagePath,
-        "--participants-json",
-        participantsPath,
-        "--output",
-        ocrOutputPath,
-      ],
-      { stdio: "inherit" }
-    );
+    let ocrRun = runSwiftOcr({
+      swiftScriptPath,
+      imagePath,
+      participantsPath,
+      ocrOutputPath,
+      windowOverride: null,
+    });
+
+    if (ocrRun.status !== 0) {
+      const ocrOutput = `${ocrRun.stdout ?? ""}\n${ocrRun.stderr ?? ""}`;
+      if (hasWindowInferenceFailure(ocrOutput)) {
+        const windowOverride = await resolveWindowOverrideFallback();
+        if (!windowOverride) {
+          throw new Error("Aborted before OCR: window inference failed and no override was provided");
+        }
+
+        ocrRun = runSwiftOcr({
+          swiftScriptPath,
+          imagePath,
+          participantsPath,
+          ocrOutputPath,
+          windowOverride,
+        });
+      }
+    }
 
     if (ocrRun.status !== 0) {
       throw new Error(`OCR script failed with status ${ocrRun.status ?? "unknown"}`);

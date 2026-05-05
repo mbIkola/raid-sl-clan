@@ -40,8 +40,9 @@ Interactive uploader flow:
 
 1. Loads roster from admin API.
 2. Runs Swift OCR using roster aliases as participants.
-3. Prompts to create missing players (if any).
-4. Shows preview and prompts before `/apply`.
+3. If filename date inference fails, offers fallback window selection (auto-candidate from KT anchor or manual UTC start/end).
+4. Prompts to create missing players (if any).
+5. Shows preview and prompts before `/apply`.
 
 Usage:
 
@@ -74,6 +75,7 @@ swift tool/ocr-clan-results/render-import-sql.swift \
 ## Notes
 
 - The tool maps screenshot date to KT window using bi-weekly calendar anchoring from `2025-03-25T09:00:00Z`.
+- If filename inference fails, uploader can rerun OCR with explicit `--window-start-at/--window-ends-at`.
 - Uploader apply payload uses roster-based `rosterExpectation.expectedCount` (active roster, including newly created players) so partial OCR row sets are rejected by validation.
 - Opponent player breakdown is intentionally not extracted.
 - Output is intentionally import-focused: no confidence/debug fields in canonical records.
