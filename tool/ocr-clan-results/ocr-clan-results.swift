@@ -139,7 +139,7 @@ func parseOptions() throws -> CLIOptions {
       printUsage()
       exit(0)
     default:
-      break
+      throw CLIError.invalidOptionValue("Unknown argument: \(arg)")
     }
     index += 1
   }
@@ -169,7 +169,7 @@ func normalized(_ value: String) -> String {
   let lowered = value.lowercased()
   let mapped = lowered
     .replacingOccurrences(of: "ё", with: "е")
-    .replacingOccurrences(of: "і", with: "и")
+    .replacingOccurrences(of: "і", with: "i")
   let collapsed = mapped.replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
   return collapsed.trimmingCharacters(in: .whitespacesAndNewlines)
 }
@@ -199,7 +199,9 @@ func containsLetter(_ value: String) -> Bool {
 }
 
 func parseCaptureDate(from fileName: String) -> Date? {
-  let calendar = Calendar(identifier: .gregorian)
+  let localTimeZone = TimeZone.current
+  var calendar = Calendar(identifier: .gregorian)
+  calendar.timeZone = localTimeZone
 
   let numericPattern = #"^(\d{2})\.(\d{2})\.(\d{2})"#
   if
@@ -212,52 +214,27 @@ func parseCaptureDate(from fileName: String) -> Date? {
     let month = Int(fileName[monthRange]),
     let yearShort = Int(fileName[yearRange])
   {
+    let year = 2000 + yearShort
+
     var comps = DateComponents()
-    comps.year = 2000 + yearShort
+    comps.year = year
     comps.month = month
     comps.day = day
     comps.hour = 0
     comps.minute = 0
     comps.second = 0
-    comps.timeZone = TimeZone(secondsFromGMT: 0)
-    return calendar.date(from: comps)
-  }
+    comps.timeZone = localTimeZone
 
-  let englishPattern = #"^(january|february|march|april|may|june|july|august|september|october|november|december)-(\d{1,2})-clanwars-report"#
-  if
-    let regex = try? NSRegularExpression(pattern: englishPattern),
-    let match = regex.firstMatch(in: fileName.lowercased(), range: NSRange(location: 0, length: fileName.utf16.count)),
-    let monthRange = Range(match.range(at: 1), in: fileName.lowercased()),
-    let dayRange = Range(match.range(at: 2), in: fileName.lowercased()),
-    let day = Int(fileName.lowercased()[dayRange])
-  {
-    let monthMap: [String: Int] = [
-      "january": 1,
-      "february": 2,
-      "march": 3,
-      "april": 4,
-      "may": 5,
-      "june": 6,
-      "july": 7,
-      "august": 8,
-      "september": 9,
-      "october": 10,
-      "november": 11,
-      "december": 12
-    ]
-    guard let month = monthMap[String(fileName.lowercased()[monthRange])] else {
+    guard let parsedDate = calendar.date(from: comps) else {
       return nil
     }
 
-    var comps = DateComponents()
-    comps.year = 2025
-    comps.month = month
-    comps.day = day
-    comps.hour = 0
-    comps.minute = 0
-    comps.second = 0
-    comps.timeZone = TimeZone(secondsFromGMT: 0)
-    return calendar.date(from: comps)
+    let roundTrip = calendar.dateComponents([.year, .month, .day], from: parsedDate)
+    guard roundTrip.year == year, roundTrip.month == month, roundTrip.day == day else {
+      return nil
+    }
+
+    return parsedDate
   }
 
   return nil
@@ -268,45 +245,75 @@ func parseWindow(from fileName: String) -> TournamentWindow? {
     return nil
   }
 
-  let calendar = Calendar(identifier: .gregorian)
+  var localCalendar = Calendar(identifier: .gregorian)
+  localCalendar.timeZone = TimeZone.current
+
+  var utcCalendar = Calendar(identifier: .gregorian)
+  utcCalendar.timeZone = TimeZone(secondsFromGMT: 0)!
+
+  let localDayStart = localCalendar.startOfDay(for: captureDate)
+  guard let localDayEnd = localCalendar.date(byAdding: .day, value: 1, to: localDayStart) else {
+    return nil
+  }
+
   var anchorComps = DateComponents()
   anchorComps.year = 2025
   anchorComps.month = 3
   anchorComps.day = 25
-  anchorComps.hour = 0
+  anchorComps.hour = 9
   anchorComps.minute = 0
   anchorComps.second = 0
   anchorComps.timeZone = TimeZone(secondsFromGMT: 0)
 
-  guard let anchorStart = calendar.date(from: anchorComps) else {
+  guard let anchorStart = utcCalendar.date(from: anchorComps) else {
     return nil
   }
 
   let biweeklySeconds = 14 * 24 * 60 * 60
   let windowSpanSeconds = 2 * 24 * 60 * 60
-  let deltaSeconds = Int(captureDate.timeIntervalSince(anchorStart))
-  let cycles = max(0, deltaSeconds / biweeklySeconds)
+  let approxCycles = Int(floor(localDayStart.timeIntervalSince(anchorStart) / Double(biweeklySeconds)))
 
-  guard
-    let startDate = calendar.date(byAdding: .second, value: cycles * biweeklySeconds, to: anchorStart),
-    let endDate = calendar.date(byAdding: .second, value: windowSpanSeconds, to: startDate)
-  else {
-    return nil
+  var matchedStartDate: Date?
+  var matchedEndDate: Date?
+
+  for cycle in (approxCycles - 1)...(approxCycles + 1) {
+    guard cycle >= 0 else {
+      continue
+    }
+
+    guard
+      let startDate = utcCalendar.date(byAdding: .second, value: cycle * biweeklySeconds, to: anchorStart),
+      let endDate = utcCalendar.date(byAdding: .second, value: windowSpanSeconds, to: startDate)
+    else {
+      continue
+    }
+
+    let overlapsLocalDay = localDayStart < endDate && startDate < localDayEnd
+    if overlapsLocalDay {
+      matchedStartDate = startDate
+      matchedEndDate = endDate
+      break
+    }
   }
 
-  if captureDate < startDate || captureDate > endDate {
+  guard let startDate = matchedStartDate, let endDate = matchedEndDate else {
     return nil
   }
 
   let dayFormatter = DateFormatter()
-  dayFormatter.calendar = calendar
+  dayFormatter.calendar = utcCalendar
   dayFormatter.timeZone = TimeZone(secondsFromGMT: 0)
   dayFormatter.dateFormat = "yyyy-MM-dd"
 
   let startsOn = dayFormatter.string(from: startDate)
   let endsOn = dayFormatter.string(from: endDate)
-  let startsAt = startsOn + "T00:00:00Z"
-  let endsAt = endsOn + "T00:00:00Z"
+
+  let dateFormatter = DateFormatter()
+  dateFormatter.calendar = utcCalendar
+  dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+  dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+  let startsAt = dateFormatter.string(from: startDate)
+  let endsAt = dateFormatter.string(from: endDate)
 
   return TournamentWindow(
     sourceReportKey: "clan_wars:\(startsOn)_\(endsOn)",
@@ -613,6 +620,8 @@ func autocorrectNicknames(
   rows: [ClanWarsPlayerBreakdown],
   members: [String]
 ) -> (rows: [ClanWarsPlayerBreakdown], corrections: [NameCorrection]) {
+  let maxDistanceRatio = 0.40
+
   guard !rows.isEmpty, !members.isEmpty else {
     return (rows, [])
   }
@@ -666,7 +675,7 @@ func autocorrectNicknames(
       }
     }
 
-    if let best {
+    if let best, best.ratio <= maxDistanceRatio {
       assignments[rowIndex] = (best.member, best.distance)
       available.remove(best.member.index)
     }

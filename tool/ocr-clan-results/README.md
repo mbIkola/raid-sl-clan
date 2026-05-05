@@ -34,6 +34,35 @@ Participants JSON accepted shapes:
 
 The tool auto-corrects recognized nicknames to the nearest clan participant using string distance.
 
+## Admin Upload CLI (Intermediate Results)
+
+Interactive uploader flow:
+
+1. Loads roster from admin API.
+2. Runs Swift OCR using roster aliases as participants.
+3. Prompts to create missing players (if any).
+4. Shows preview and prompts before `/apply`.
+
+Usage:
+
+```bash
+KT_ADMIN_TOKEN=... node tool/ocr-clan-results/upload-intermediate.mjs \
+  --image /absolute/path/to/screenshot.jpg \
+  --api-base-url http://localhost:8787/api/admin/clan-wars/intermediate
+```
+
+Environment defaults:
+
+- `KT_ADMIN_TOKEN`: admin ingest token (`--token` overrides it)
+- `KT_ADMIN_API_BASE_URL`: admin API base (`--api-base-url` overrides it)
+
+Minimal invocation with env defaults:
+
+```bash
+KT_ADMIN_TOKEN=... KT_ADMIN_API_BASE_URL=https://vibr-clan.org/api/admin/clan-wars/intermediate \
+  node tool/ocr-clan-results/upload-intermediate.mjs --image /absolute/path/to/screenshot.jpg
+```
+
 Render SQL stubs from canonical JSON:
 
 ```bash
@@ -44,7 +73,8 @@ swift tool/ocr-clan-results/render-import-sql.swift \
 
 ## Notes
 
-- The tool maps screenshot date to KT window using bi-weekly calendar anchoring from `2025-03-25T00:00:00Z`.
+- The tool maps screenshot date to KT window using bi-weekly calendar anchoring from `2025-03-25T09:00:00Z`.
+- Uploader apply payload uses roster-based `rosterExpectation.expectedCount` (active roster, including newly created players) so partial OCR row sets are rejected by validation.
 - Opponent player breakdown is intentionally not extracted.
 - Output is intentionally import-focused: no confidence/debug fields in canonical records.
 - The tool validates `sum(playersOurs.points)` against OCR `totals.mine`. If mismatch is above `1%` (configurable via `--max-mine-total-diff-ratio`), it exits with code `2`.

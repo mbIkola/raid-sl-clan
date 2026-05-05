@@ -108,6 +108,22 @@ Operator runbooks live in:
 
 - `docs/operator/cloudflare-bootstrap.md`
 - `docs/operator/delivery-model.md`
+- `docs/operator/kt-intermediate-upload.md`
+
+## KT Intermediate Upload (Operator)
+
+- API base: `/api/admin/clan-wars/intermediate`
+- `GET /roster`
+- `POST /players`
+- `POST /apply`
+- Auth header: `X-Admin-Token`
+- Local uploader:
+
+```bash
+KT_ADMIN_TOKEN=... node tool/ocr-clan-results/upload-intermediate.mjs \
+  --image /absolute/path/to/screenshot.jpg \
+  --api-base-url http://localhost:8787/api/admin/clan-wars/intermediate
+```
 
 ## Validation
 
