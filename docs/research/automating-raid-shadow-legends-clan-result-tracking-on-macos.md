@@ -1,5 +1,7 @@
 # Automating Raid Shadow Legends Clan Result Tracking on macOS
 
+> Historical research. Its OCR-first recommendation was superseded on 2026-10-20 by the project's preference for semi-automatic structured extraction after opening the relevant RAID screen. See [RAID client clan results: structured collection research notes](2026-10-20-raid-client-clan-results-extraction.md). The earlier analysis below remains for context; it is not the current implementation direction.
+
 ## Bottom line
 
 The most defensible and practical solution on **macOS** is **not** to chase an undocumented Plarium API first, and **not** to hook or patch the client. The strongest path is a **read-only companion app** that captures the RAID window on your Mac, runs **local OCR** on-device, and ships normalized JSON to your site and Telegram formatting pipeline. That recommendation follows from three things the public evidence makes clear: Plarium’s Terms prohibit reverse engineering and deriving code from the service; Apple gives you first-party macOS APIs for window capture and text recognition; and the existing RAID ecosystem proves that client-side data extraction is technically possible, but most mature tooling is either Windows-only, process-reading, or trust-heavy rather than a clean Mac-native export flow. citeturn8view2turn1search2turn1search17turn1search26turn20search0turn20search1turn26view0turn29view3
