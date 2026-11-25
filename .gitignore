@@ -13,3 +13,5 @@ dist
 !.env.example
 !.dev.vars.example
 .beads/embeddeddolt/
+local/champion-catalog/
+__pycache__/
