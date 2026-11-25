@@ -2,6 +2,13 @@
 
 Dependency-free Python 3.11+ importer. Downloads public RSL-X game reference data and images, plus separate HellHades mastery recommendations. It never invokes Wrangler, uploads data, or deploys anything.
 
+For offline reading and Agent SDK integration, use the executable [`raid-catalog`](raid-catalog) and its [public JSON contract](READ-API.md):
+
+```bash
+tool/champion-catalog/raid-catalog get_character Alure
+tool/champion-catalog/raid-catalog get_masteries Ronda --mode pve
+```
+
 From the repository root:
 
 ```bash
