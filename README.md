@@ -104,6 +104,8 @@ Before a manual deploy that depends on D1:
 
 ## Operator Docs
 
+For a local champion catalogue (JSON, portraits, skill icons and separate mastery recommendations), see [the catalogue importer](tool/champion-catalog/README.md). Generated catalogue files stay local and are excluded from Git.
+
 Operator runbooks live in:
 
 - `docs/operator/cloudflare-bootstrap.md`
