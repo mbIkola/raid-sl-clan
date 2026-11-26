@@ -54,4 +54,6 @@
 # - github.repo
 
 sync:
-    # remote: "git+ssh://git@github.com/mbIkola/raid-sl-clan.git"
+    remote: "git+ssh://git@github.com/mbIkola/raid-sl-clan-beads.git"
+
+# remote: "git+ssh://git@github.com/mbIkola/raid-sl-clan.git"
