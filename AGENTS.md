@@ -159,6 +159,14 @@ If you are new to the repo, read in this order:
 
 That is enough to understand the current skeleton.
 
+## Beads Storage and Recovery
+
+- The authoritative Beads database is in the **private** `mbIkola/raid-sl-clan-beads` GitHub repository. Never sync new task data to the public code origin.
+- Use Beads 1.3.4. On a new machine run `bd bootstrap --yes`; do not reinitialize or independently migrate an old copy.
+- Native auto-push is enabled after mutations with a `1ns` interval. It requires network access and existing GitHub SSH authentication. A task command can succeed locally even if auto-push fails; verify `bd dolt push` before handoff.
+- Only one machine may write at a time. Pull before taking over from another machine; do not force-push a diverged database.
+- Independent daily snapshots run in the private repository's GitHub Actions and are retained in its Releases. See [recovery runbook](docs/operator/beads-recovery.md) for outages, snapshot recovery and the local-only recovery drill.
+
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
 ## Beads Issue Tracker
 

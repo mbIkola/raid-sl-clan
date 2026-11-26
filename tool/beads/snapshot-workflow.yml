@@ -1,0 +1,47 @@
+name: Beads recovery snapshot
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: beads-recovery-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - name: Test snapshot recovery without an upstream
+        run: python3 -m unittest discover -s tool/beads -p 'test_*.py'
+      - name: Create self-contained recovery bundle
+        id: snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh auth setup-git
+          stamp=$(date -u +%Y%m%dT%H%M%SZ)
+          tag="beads-backup-${stamp}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          file="${RUNNER_TEMP}/${tag}.bundle"
+          bash tool/beads/snapshot.sh "https://github.com/${GITHUB_REPOSITORY}.git" "$file"
+          printf 'tag=%s\nfile=%s\n' "$tag" "$file" >> "$GITHUB_OUTPUT"
+      - name: Retain independent snapshot in private Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.snapshot.outputs.tag }}
+          FILE: ${{ steps.snapshot.outputs.file }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" "$FILE" "$FILE.sha256" \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Beads recovery snapshot ${TAG#beads-backup-}" \
+            --notes 'Self-contained bundle of refs/dolt/data. Verify the SHA-256 checksum before recovery. Recovery instructions are in README.md. No automatic expiry or replacement.' \
+            --prerelease --latest=false
+          printf 'Snapshot: https://github.com/%s/releases/tag/%s\n' "$GITHUB_REPOSITORY" "$TAG" >> "$GITHUB_STEP_SUMMARY"
