@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""Offline RAID catalogue queries. Machine output is one versioned JSON document."""
+
+import argparse
+import json
+import sys
+
+from reader import CatalogReader, DEFAULT_CATALOG, QueryError, SCHEMA_VERSION
+
+
+class Parser(argparse.ArgumentParser):
+    def error(self, message):
+        raise QueryError("INVALID_ARGUMENTS", message, exit_code=2)
+
+
+def main(argv=None):
+    try:
+        parser = Parser(description=__doc__)
+        parser.add_argument("--catalog", default=str(DEFAULT_CATALOG), help="Local catalogue directory")
+        parser.add_argument("--metadata", help="Explicit authored metadata JSON; default: <catalog>/metadata.json if present")
+        commands = parser.add_subparsers(dest="command", required=True)
+        character = commands.add_parser("get_character", help="Resolve an ID, exact name or alias")
+        character.add_argument("character")
+        search = commands.add_parser("search_characters", help="Search names and aliases; paginated")
+        search.add_argument("query", nargs="?", default="")
+        search.add_argument("--limit", type=int, default=20)
+        search.add_argument("--offset", type=int, default=0)
+        masteries = commands.add_parser("get_masteries", help="Read self-contained recommended mastery builds")
+        masteries.add_argument("character")
+        masteries.add_argument("--mode", choices=["all", "pve", "pvp"], default="all")
+        masteries.add_argument("--include-unvalidated", action="store_true")
+        args = parser.parse_args(argv)
+        reader = CatalogReader(args.catalog, args.metadata)
+        if args.command == "get_character":
+            data = reader.get_character(args.character)
+        elif args.command == "search_characters":
+            data = reader.search_characters(args.query, args.limit, args.offset)
+        else:
+            data = reader.get_masteries(args.character, args.mode, args.include_unvalidated)
+        response, status = {"schema_version": SCHEMA_VERSION, "ok": True, "data": data}, 0
+    except QueryError as error:
+        response = {"schema_version": SCHEMA_VERSION, "ok": False,
+                    "error": {"code": error.code, "message": str(error), "details": error.details}}
+        status = error.exit_code
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        response = {"schema_version": SCHEMA_VERSION, "ok": False,
+                    "error": {"code": "INVALID_CATALOG", "message": "Catalogue data is unreadable or malformed",
+                              "details": {"reason": str(error)}}}
+        status = 5
+    print(json.dumps(response, ensure_ascii=False, separators=(",", ":")))
+    return status
+
+
+if __name__ == "__main__":
+    sys.exit(main())

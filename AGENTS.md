@@ -84,6 +84,8 @@ Contains the versioned SQL source of truth for D1 schema changes.
 4. A repository-owned D1 migration directory.
 5. A committed `d1_databases` binding in `apps/web/wrangler.jsonc` pointing at the repository-owned D1 migrations directory.
 6. Operator documentation for Cloudflare bootstrap, delivery model, and deploy work.
+7. A dependency-free local champion catalogue importer under `tool/champion-catalog` (RSL-X SQLite, JSON and images; separate HellHades mastery builds). See its README for full imports, single-champion refreshes and Python tests. Generated data stays in ignored `local/champion-catalog/`; it is not deployed.
+8. A read-only `tool/champion-catalog/raid-catalog` CLI with a versioned snake_case JSON contract, stable `raid:<game-id>` identities, optional authored names/aliases, file image URIs, self-contained `get_masteries`, and an optional Agent SDK subprocess adapter. See `tool/champion-catalog/READ-API.md`.
 
 ## What Does Not Exist Yet
 

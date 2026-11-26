@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RAID catalogue CLI response v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": ["schema_version", "ok", "data"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "ok": {"const": true},
+        "data": {"oneOf": [{"$ref": "#/$defs/character"}, {"$ref": "#/$defs/search"}, {"$ref": "#/$defs/recommendations"}]}
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": ["schema_version", "ok", "error"],
+      "properties": {
+        "schema_version": {"const": 1},
+        "ok": {"const": false},
+        "error": {
+          "type": "object",
+          "required": ["code", "message", "details"],
+          "properties": {"code": {"type": "string"}, "message": {"type": "string"}, "details": {"type": "object"}},
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "$defs": {
+    "images": {
+      "type": "object",
+      "propertyNames": {"pattern": "^[a-z][a-z0-9_]*$"},
+      "additionalProperties": {"type": "string", "format": "uri", "pattern": "^file:///"}
+    },
+    "character": {
+      "type": "object",
+      "required": ["character_id", "canonical_name", "names", "aliases", "images"],
+      "properties": {
+        "character_id": {"type": "string", "pattern": "^raid:[0-9]+$"},
+        "canonical_name": {"type": "string", "minLength": 1},
+        "names": {"type": "object", "required": ["en"], "additionalProperties": {"type": "string", "minLength": 1}},
+        "aliases": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "images": {"$ref": "#/$defs/images"}
+      },
+      "additionalProperties": false
+    },
+    "search": {
+      "type": "object",
+      "required": ["items", "total", "limit", "offset"],
+      "properties": {
+        "items": {"type": "array", "items": {"$ref": "#/$defs/character"}},
+        "total": {"type": "integer", "minimum": 0},
+        "limit": {"type": "integer", "minimum": 1, "maximum": 100},
+        "offset": {"type": "integer", "minimum": 0}
+      },
+      "additionalProperties": false
+    },
+    "source": {
+      "type": "object",
+      "required": ["provider", "url", "fetched_at"],
+      "properties": {"provider": {"type": ["string", "null"]}, "url": {"type": ["string", "null"]}, "fetched_at": {"type": ["string", "null"]}},
+      "additionalProperties": false
+    },
+    "build": {
+      "type": "object",
+      "required": ["build_id", "mode", "label", "validation", "mastery_ids"],
+      "properties": {
+        "build_id": {"type": "string"},
+        "mode": {"enum": ["pve", "pvp"]},
+        "label": {"type": "string"},
+        "validation": {"enum": ["validated", "unvalidated"]},
+        "mastery_ids": {"type": "array", "items": {"type": "string"}},
+        "issues": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "preserved_from": {"$ref": "#/$defs/source"}
+      },
+      "allOf": [
+        {"if": {"properties": {"validation": {"const": "validated"}}}, "then": {"properties": {"mastery_ids": {"minItems": 15, "maxItems": 15, "uniqueItems": true}}}},
+        {"if": {"properties": {"validation": {"const": "unvalidated"}}}, "then": {"required": ["issues"]}}
+      ],
+      "additionalProperties": false
+    },
+    "mastery": {
+      "type": "object",
+      "required": ["mastery_id", "name", "description", "tree", "tier", "images"],
+      "properties": {
+        "mastery_id": {"type": "string"}, "name": {"type": "string"}, "description": {"type": "string"},
+        "tree": {"enum": ["offense", "defense", "support"]}, "tier": {"type": "integer", "minimum": 1, "maximum": 6},
+        "images": {"$ref": "#/$defs/images"}
+      },
+      "additionalProperties": false
+    },
+    "recommendations": {
+      "type": "object",
+      "required": ["character", "status", "source", "builds", "masteries", "unvalidated_builds", "unvalidated_build_count", "warnings"],
+      "properties": {
+        "character": {"$ref": "#/$defs/character"},
+        "status": {"enum": ["available", "partial", "unvalidated", "no_recommendations"]},
+        "source": {"$ref": "#/$defs/source"},
+        "builds": {"type": "array", "items": {"allOf": [{"$ref": "#/$defs/build"}, {"properties": {"validation": {"const": "validated"}}}]}},
+        "masteries": {"type": "object", "additionalProperties": {"$ref": "#/$defs/mastery"}},
+        "unvalidated_builds": {"type": "array", "items": {"allOf": [{"$ref": "#/$defs/build"}, {"properties": {"validation": {"const": "unvalidated"}}}]}},
+        "unvalidated_build_count": {"type": "integer", "minimum": 0},
+        "warnings": {"type": "array", "items": {
+          "type": "object", "required": ["code", "count", "message", "build_ids"],
+          "properties": {"code": {"const": "UNVALIDATED_SOURCE_BUILDS"}, "count": {"type": "integer", "minimum": 1},
+            "message": {"type": "string"}, "build_ids": {"type": "array", "items": {"type": "string"}}}, "additionalProperties": false
+        }}
+      },
+      "additionalProperties": false
+    }
+  }
+}
